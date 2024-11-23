@@ -266,7 +266,7 @@ class UserService {
         return new Promise((resolve, reject) => {
             client.query(`
                 SELECT * FROM users
-                WHERE email = $1
+                WHERE email = ?
             `, [email], (err, res) => {
                 if (err) {
                     reject({
@@ -275,7 +275,7 @@ class UserService {
                         data: null
                     });
                 }
-                else if (res.rows.length === 0) {
+                else if (res.length === 0) {
                     resolve({
                         status: 404,
                         msg: 'The email is not exist',
@@ -286,7 +286,7 @@ class UserService {
                     resolve({
                         status: 200,
                         msg: 'Fetch success',
-                        data: res.rows
+                        data: res
                     });
                 }
             })
