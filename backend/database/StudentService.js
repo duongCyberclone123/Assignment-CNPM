@@ -1,6 +1,5 @@
 const client = require('./database');
 const { v4: uuidv4 } = require('uuid')
-
 class StudentService{
     constructor(){}
     // View history log
@@ -90,7 +89,8 @@ class StudentService{
                         data: null
                     })
                 }
-                else if (res.length != 0){
+                else if (res.length !== 0){
+                    console.log('Dup files')
                     resolve({
                         status: 400,
                         msg: 'This file has been uploaded!',
@@ -130,16 +130,66 @@ class StudentService{
         })
     }
 
-    // async choosePrinter(location, PrintingLog){
-    //     return new Promise(`
-    //         SELECT TOP 1 FROM printer
-    //         WHERE plocation = ${location} and filetype in ${PrintingLog.filetype} and pageremain >= ${PrintingLog.numpageprint * PrintingLog.numcopy}
-    //     `)
-    // }
+    async choosePrinter(location, PrintingLog){
+        if(PrintingLog.isColorPrinting){
+            const params = [
+                location,
+                PrintingLog.numPagePrint * PrintingLog.numCopy,
+                PrintingLog.paperSize,
+                PrintingLog.isColorPrinting,
+                true, true
+            ]
+            return new Promise((resolve,reject)=>{
+                    client.query(`
+                    SELECT * FROM printer
+                    WHERE plocation = ? 
+                    and pageremain >= ? 
+                    and find_in_set(?, fileAccepted) > 0
+                    and provideColoring = ?
+                    and status = ?
+                    ORDER BY   queue    ASC, pageremain DESC
+                    LIMIT 1
+                `,params,(err,res)=> {
+                    if (err){
+                        reject({
+                            status: 400,
+                            msg: err.message,
+                            data: null
+                        })
+                    }
+                    else if (res.length === 0){
+                        console.log('No printers available now!')
+                        resolve({
+                            status: 400,
+                            msg: 'No printers available now!',
+                            data: null
+                        })
+                    }
+                    else {
+                        
+                    }
+                })
+            })
+        }
+        const params = [
+            location,
+            PrintingLog.numPagePrint * PrintingLog.numCopy,
+            PrintingLog.paperSize
+        ]
+        return new Promise(`
+            SELECT * FROM printer
+            WHERE plocation = ? 
+            and pageremain >= ? 
+            and find_in_set(?, fileAccepted) > 0
+            LIMIT 1
+        `, params,(err,res) => {
 
-    // async Printing(){
+        })
+    }
 
-    // }
+    async Printing(){
+
+    }
 }
 
 module.exports = new StudentService;
