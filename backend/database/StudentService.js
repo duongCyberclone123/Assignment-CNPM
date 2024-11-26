@@ -76,11 +76,12 @@ class StudentService{
     }
     // Printing Process
     async uploadFile(studentID, newFile){
+        studentID = parseInt(studentID)
         return new Promise((resolve,reject) => {
             const {dname, dsize, dformat, dpage_num, dupload_time} = newFile
             client.query(`
                 SELECT * FROM document
-                WHERE dname = ? and studentID = ?
+                WHERE dname = ? and sid = ?
             `, [dname, studentID], (err, res) =>{
                 if (err){
                     reject({
@@ -99,10 +100,9 @@ class StudentService{
                 }
                 else{
                     try{
-                        const did = uuidv4()
                         client.query(
-                            `INSERT INTO document(did, dname, dsize, dformat, dpage_num, dupload_time,studentID) VALUES (?,?, ?, ?, ?, ?,?)`,
-                            [did, dname, dsize, dformat, dpage_num, dupload_time, studentID],
+                            `INSERT INTO document(dname, dsize, dformat, dpage_num, dupload_time,sid) VALUES (?,?, ?, ?, ?, ?)`,
+                            [dname, parseInt(dsize), dformat, dpage_num, dupload_time, studentID],
                             async (err, res) => {
                                 if (err) {
                                     console.log(err)

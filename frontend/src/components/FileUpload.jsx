@@ -27,7 +27,7 @@ const FileUpload = () => {
         const mysqlDatetime = date.toISOString().slice(0, 19).replace('T', ' ');
         formData.append("dupload_time", mysqlDatetime);
         try {
-            const response = await axios.post("http://localhost:8000/api/printing/uploadFile?uid=a10oW25", formData, {
+            const response = await axios.post("http://localhost:8000/api/printing/uploadFile?uid=2001", formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
