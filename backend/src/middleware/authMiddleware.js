@@ -14,7 +14,7 @@ class AuthMiddleWare {
                 })
             }
             const userType = user.userType
-            if (userType === 'admin') {
+            if (userType === 'SPSO') {
                 next()
             } else {
                 return res.status(404).json({
@@ -39,7 +39,7 @@ class AuthMiddleWare {
                 })
             }
             //if (user.userType === 'admin' || user.userId === userid) {
-            if (user.userType === 'admin') {
+            if (user.userType === 'SPSO') {
                 next()
             } else {
                 return res.status(404).json({
