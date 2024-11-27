@@ -24,5 +24,6 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 router.post('/uploadFile?:studentID',upload.single('file'), studentController.uploadFile);
+router.get('/getPrinters',studentController.PrintersInLocation)
 router.post('/processPrinting/:studentID/:docID',studentController.Printing)
 module.exports = router
