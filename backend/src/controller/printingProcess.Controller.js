@@ -25,6 +25,24 @@ class StudentController{
             })
         }
     }
+
+    async PrintersInLocation(req, res){
+        try{
+            console.log(req.body)
+            const {place, building, room} = req.body
+            const response = await StudentService.sortPrintersByLocation(place,building,room)
+            console.log(response)
+            return res.status(200).json(response)
+        }
+        catch(err){
+            return res.status(404).json({
+                status: 404,
+                msg: err,
+                data: null
+            })
+        }
+    }
+
     async Printing(req,res){
         try{
             const studentID = req.query.uid
