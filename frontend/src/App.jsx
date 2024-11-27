@@ -1,13 +1,13 @@
-import logo from './logo.svg';
-import './App.css';
-import Navbar from './components/navbar';
-
+import React from "react";
+import FileUpload from "./components/FileUpload";
+import FilePreview from "./components/FileRead";
 function App() {
-  return (
-    <div className="App">
-      <Navbar/>
-    </div>
-  );
+    return (
+        <div>
+            <FileUpload />
+            <FilePreview />
+        </div>
+    );
 }
 
 export default App;

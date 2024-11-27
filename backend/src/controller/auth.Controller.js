@@ -45,7 +45,7 @@ class AuthController {
         try {
             const hashPw = await bcrypt.hash(password, 12);
             let result;
-            if (req.body.userType === 'admin') {
+            if (req.body.userType === 'SPSO') {
                 result = await UserService.createAdmin(username, hashPw, req.body);
             } else {
                 result = await UserService.createCustomer(username, hashPw, req.body);
@@ -66,192 +66,84 @@ class AuthController {
                 });
             }
         }
-        // bcrypt.hash(password, 12)
-        //     .then((hashPw) => {
-        //         if (req.body.userType === 'admin') {
-        //             UserService.createAdmin(username, hashPw, req.body);
-        //         }
-        //         else {
-        //             UserService.createCustomer(username, hashPw, req.body);
-        //         }
-        //     })
-        //     .then(result => {
-        //         res.status(200).json({
-        //             status: 200,
-        //             msg: 'User created',
-        //             data: null
-        //             //userId: userId
-        //         })
-        //     })
-        //     .catch(err => {
-        //         if (!err.statusCode) {
-        //             err.statusCode = 500;
-        //         }
-        //         next(err);
-        //     })}catch(errCreate){
-        //         res.status(err.statusCode || 500).json({
-        //             status: "ERR",
-        //             message: err.message || "An error occurred"
-        //         });
-        //     }
     }
 
 
     //thiếu kiểm soát phiên đăng nhập khi một tk đăng nhập, có thể đăng nhập tk đó ở mấy khác nên phải kiểm soát bằng cách thêm token vào db hoặc tìm hiểu về redis
     async postLogin(req, res) {
-        const email = req.body.email;
-        const password = req.body.password;
-        let loadedUser;
-        UserService.findByEmail(email)
-            .then(result => {
-                if (result.status !== 200) {
-                    const error = new Error('Wrong email');
-                    error.statusCode = 401;
-                    error.msg = result.msg;
-                    error.data = null;
-                    throw error;
-
-                }
-
-                loadedUser = result.data[0];
-                console.log('Check user: ', loadedUser);
-                return bcrypt.compare(password, loadedUser.upassword);
-            })
-            .then((isEqual) => {
-                if (!isEqual) {
-                    const error = new Error('Wrong password');
-                    error.statusCode = 401;
-                    error.msg = 'Wrong password';
-                    error.data = null;
-                    throw error;
-                }
-
-                const token = jwt.sign(
-                    {
-                        userId: loadedUser.uid,
-                        userType: loadedUser.usertype,
-                        email: loadedUser.email,
-                    },
-                    process.env.SECRET_TOKEN,
-                    { expiresIn: '1h' }
-                );
-
-                //localStorage.setItem('token', token);
-                res.cookie('token', token, {
-                    httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production', // Chỉ bật secure trên môi trường production
-                    maxAge: 3600000 // 1 giờ
+        try {
+            const email = req.body.email;
+            const password = req.body.password;
+    
+            // Kiểm tra email và password
+            if (!email || !password) {
+                return res.status(400).json({
+                    status: 400,
+                    msg: 'Email and password are required',
+                    data: null,
                 });
-
-                res.status(200).json({
-                    status: 200,
-                    msg: 'Authentication successful',
-                    data: { token: token }
-                });
-            })
-            .catch(err => {
-                res.status(err.statusCode || 500).json({
-                    status: err.statusCode || 500,
-                    msg: err.msg || 'An error occurred',
-                    data: err.data || null
-                });
+            }
+    
+            console.log('Email: ', email);
+    
+            // Tìm kiếm user theo email
+            const result = await UserService.findByEmail(email);
+    
+            if (result.status !== 200) {
+                const error = new Error('Wrong email');
+                error.statusCode = 401;
+                error.msg = result.msg;
+                throw error;
+            }
+    
+            const loadedUser = result.data[0];
+            console.log('Check user: ', loadedUser);
+            console.log(password + " - " + loadedUser.password)
+            // So sánh mật khẩu
+            //const isEqual = await bcrypt.compare(password, loadedUser.password);
+            if (password != loadedUser.password) {
+                const error = new Error('Wrong password');
+                error.statusCode = 401;
+                error.msg = 'Wrong password';
+                throw error;
+            }
+    
+            // Tạo JWT token
+            const token = jwt.sign(
+                {
+                    userId: loadedUser.uid,
+                    userType: loadedUser.usertype,
+                    email: loadedUser.email,
+                },
+                process.env.SECRET_TOKEN,
+                { expiresIn: '1h' }
+            );
+    
+            // Lưu token vào cookie
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production', // Chỉ bật secure trên môi trường production
+                maxAge: 3600000, // 1 giờ
             });
-    }
-
-    async fetchAllUsers(req, res) {
-        try {
-            const { limit, page, filter, sort } = req.query
-            const response = await UserService.fetchUsers(Number(limit) || 5, Number(page) || 0, filter, sort)
-            return res.status(200).json(response)
-        }
-        catch (err) {
-            return res.status(404).json({
-                status: 404,
-                msg: err,
-                data: null
-            })
-        }
-        // const limit = req.params.limit ? req.params.limit : null;
-        // try {
-        //     const data = await UserService.fetchUsers(limit);
-        //     res.json(data);
-        // }
-        // catch (err) {
-        //     next(err);
-        // }
-    }
-
-    async updateUser(req, res) {
-        try {
-            const userId = req.params.id
-            const data = req.body
-            if (!userId) {
-                return res.status(400).json({
-                    status: 400,
-                    msg: 'The userID is required',
-                    data: null
-                })
-            }
-            const response = await UserService.updateUser(userId, data)
-            return res.status(200).json(response)
-        }
-        catch (err) {
-            return res.status(404).json({
-                status: 404,
-                msg: err,
-                data: null
-            })
+    
+            // Trả về kết quả
+            res.status(200).json({
+                status: 200,
+                msg: 'Authentication successful',
+                data: {token, loadedUser},
+            });
+        } catch (err) {
+            // Bắt và xử lý lỗi
+            console.error('Error during login: ', err.message);
+    
+            res.status(err.statusCode || 500).json({
+                status: err.statusCode || 500,
+                msg: err.msg || 'An error occurred',
+                data: err.data || null,
+            });
         }
     }
-
-    async deleteUser(req, res) {
-        try {
-            const userId = req.params.id
-            if (!userId) {
-                return res.status(400).json({
-                    status: 400,
-                    msg: 'The userID is required',
-                    data: null
-                })
-            }
-            const response = await UserService.deleteUser(userId)
-            return res.status(200).json(response)
-        }
-        catch (err) {
-            return res.status(404).json({
-                status: 404,
-                msg: err,
-                data: null
-            })
-        }
-    }
-
-    async getDetailUser(req, res) {
-        try {
-            const userId = req.params.id
-            if (!userId) {
-                return res.status(400).json({
-                    status: 400,
-                    msg: 'The userID is required',
-                    data: null
-                })
-            }
-            const response = await UserService.getDetailUser(userId)
-            return res.status(200).json(response)
-        }
-        catch (err) {
-            return res.status(404).json({
-                status: 404,
-                msg: err,
-                data: null
-            })
-        }
-    }
-
-    // async logout(req, res) {
-    //     localStorage.removeItem('token');
-    //     localStorage.removeItem('userType');
-    // }
+    
     async logout(req, res) {
         const token = req.cookies.token;
         if (!token) {
@@ -267,204 +159,6 @@ class AuthController {
             msg: 'Logged out successfully',
             data: null
         });
-    }
-
-    async createPhone(req, res) {
-        try {
-            const body = req.body;
-            const user_id = req.params.id
-
-            if (!(body && user_id)) {
-                return res.status(400).json({
-                    status: 400,
-                    msg: 'The input is required',
-                    data: null
-                })
-            }
-            const response = await UserService.createPhone(user_id, body);
-            return res.status(200).json(response)
-        }
-        catch (err) {
-            return res.status(404).json({
-                status: 404,
-                msg: err,
-                data: null
-            })
-        }
-    }
-
-    async updatePhone(req, res) {
-        try {
-            const body = req.body;
-            const user_id = req.params.id
-
-            if (!(body && user_id)) {
-                return res.status(400).json({
-                    status: 400,
-                    msg: 'The input is required',
-                    data: null
-                })
-            }
-            const response = await UserService.updatePhone(user_id, body);
-            return res.status(200).json(response)
-        }
-        catch (err) {
-            return res.status(404).json({
-                status: 404,
-                msg: err,
-                data: null
-            })
-        }
-    }
-
-    async deletePhone(req, res) {
-        try {
-            const body = req.body;
-            const user_id = req.params.id
-
-            if (!(body && user_id)) {
-                return res.status(400).json({
-                    status: 400,
-                    msg: 'The input is required',
-                    data: null
-                })
-            }
-            const response = await UserService.deletePhone(user_id, body);
-            return res.status(200).json(response)
-        }
-        catch (err) {
-            return res.status(404).json({
-                status: 404,
-                msg: err,
-                data: null
-            })
-        }
-    }
-
-    async getPhone(req, res) {
-        try {
-            const body = req.body;
-            const user_id = req.params.id
-
-            if (!(body && user_id)) {
-                return res.status(400).json({
-                    status: 400,
-                    msg: 'The input is required',
-                    data: null
-                })
-            }
-            const response = await UserService.getPhone(user_id);
-            return res.status(200).json(response)
-        }
-        catch (err) {
-            return res.status(404).json({
-                status: 404,
-                msg: err,
-                data: null
-            })
-        }
-    }
-
-    async createAddress(req, res) {
-        try {
-            const userId = req.params.id
-            if (!userId) {
-                return res.status(400).json({
-                    status: 400,
-                    msg: 'The userID is required',
-                    data: null
-                })
-            }
-            if (!req.body) {
-                return res.status(400).json({
-                    status: 400,
-                    msg: 'The input is required',
-                    data: null
-                })
-            }
-            const response = await UserService.createAddress(userId, req.body)
-            return res.status(200).json(response)
-        }
-        catch (err) {
-            return res.status(404).json({
-                status: 404,
-                msg: err,
-                data: null
-            })
-        }
-    }
-
-    async updateAddress(req, res) {
-        try {
-            const userId = req.params.id
-            if (!userId) {
-                return res.status(400).json({
-                    status: 400,
-                    msg: 'The userID is required',
-                    data: null
-                })
-            }
-            if (!req.body) {
-                return res.status(400).json({
-                    status: 400,
-                    msg: 'The input is required',
-                    data: null
-                })
-            }
-            const response = await UserService.updateAddress(userId, req.body)
-            return res.status(200).json(response)
-        }
-        catch (err) {
-            return res.status(404).json({
-                status: 404,
-                msg: err,
-                data: null
-            })
-        }
-    }
-
-    async deleteAddress(req, res) {
-        try {
-            const userId = req.params.id
-            if (!userId) {
-                return res.status(400).json({
-                    status: 400,
-                    msg: 'The userID is required',
-                    data: null
-                })
-            }
-            const response = await UserService.deleteAddress(userId, req.body)
-            return res.status(200).json(response)
-        }
-        catch (err) {
-            return res.status(404).json({
-                status: 404,
-                msg: err,
-                data: null
-            })
-        }
-    }
-
-    async getAllAddress(req, res) {
-        try {
-            const userId = req.params.id
-            if (!userId) {
-                return res.status(400).json({
-                    status: 400,
-                    msg: 'The userID is required',
-                    data: null
-                })
-            }
-            const response = await UserService.getAllAddress(userId)
-            return res.status(200).json(response)
-        }
-        catch (err) {
-            return res.status(404).json({
-                status: 404,
-                msg: err,
-                data: null
-            })
-        }
     }
 }
 
