@@ -28,4 +28,5 @@ router.get('/getPrinters',studentController.PrintersInLocation)
 //router.post('/processPrinting/:studentID/:docID',studentController.Printing)
 router.post('/receivePrintingRequest',studentController.receivePrintingRequest)
 router.post('/Printing',studentController.Printing)
+router.get('/viewHistoryLog',studentController.ViewHistoryLog)
 module.exports = router

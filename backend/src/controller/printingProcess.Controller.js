@@ -1,6 +1,31 @@
 const StudentService = require('../../database/StudentService')
 
 class StudentController{
+    // View History Log
+    async ViewHistoryLog(req, res){
+        try{
+            const studentID = req.query.sid
+            const {printerID, startTime, endTime} = req.body
+            if (!studentID) return res.status(400).json({
+                status: 400,
+                msg: "Please Login",
+                data: null
+            })
+            const log = await StudentService.listAllPrintingLog(studentID, req.body);
+            return res.status(200).json({
+                status: 200,
+                msg: "View Log",
+                data: log
+            })
+        }
+        catch(err){
+            return res.status(404).json({
+                status: 404,
+                msg: err,
+                data: null
+            })
+        }
+    }
     // Printing Process
     async uploadFile(req, res){
         try {
