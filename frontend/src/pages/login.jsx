@@ -17,11 +17,13 @@ const Login = () => {
       });
 
       // Kiểm tra phản hồi từ backend
-      if (response.data.status === 200) {
+      if (response.request.status === 200) {
         const { token, loadedUser } = response.data.data;  // Lấy token và loadedUser từ response
 
         // Lưu token vào localStorage để sử dụng cho các yêu cầu API sau
         localStorage.setItem('token', token);
+        localStorage.setItem('ID', loadedUser.ID);
+        
 
         // Kiểm tra ID và phân loại vai trò người dùng
         if (loadedUser.ID >= 1 && loadedUser.ID <= 1999) {

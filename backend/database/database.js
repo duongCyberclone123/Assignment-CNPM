@@ -4,7 +4,7 @@ const mysql = require('mysql2');
 const client = mysql.createConnection({
     host: 'localhost',    // Địa chỉ máy chủ MySQL
     user: 'root',         // Tên người dùng MySQL
-    password: '123456', // Mật khẩu MySQL
+    password: '1toi9a', // Mật khẩu MySQL
     database: 'cnpm'   // Tên database
 });
 
