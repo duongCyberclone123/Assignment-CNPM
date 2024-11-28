@@ -6,7 +6,7 @@ class StudentController{
         try {
             const studentID = req.query.uid
             console.log(studentID)
-            const {dname, dsize, dformat, dpage_num, dupload_time} = req.body
+            const {dname, dsize, dformat, dpage_num} = req.body
             if (!dname || !dsize || !dformat || !dpage_num ) {
                 return res.status(400).json({
                     status: 400,
@@ -44,13 +44,9 @@ class StudentController{
         }
     }
 
-    async Printing(req,res){
+    async receivePrintingRequest(req,res){
         try{
-            const studentID = req.query.uid
-            const docID = req.query.did
-            const {location, tpages_per_copy, tcopies,tstatus, tstart_time, tend_time, isdoubleside, ishorizon, iscoloring, did} = req.body
-            const PrintingLog = {tpages_per_copy, tcopies,tstatus, tstart_time, tend_time, isdoubleside, ishorizon, iscoloring, did}
-            const response = await StudentService.Printing(location, PrintingLog,docID,studentID)
+            const response = await StudentService.receivePrintingRequest(req.body)
             return res.status(200).json(response)
         }
         catch(err){
