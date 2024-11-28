@@ -45,11 +45,11 @@ class PrinterService {
     
     static createPrinter(data) {
         return new Promise((resolve, reject) => {
-            const { Pmodel, Plocation, Pstatus, Pname, Plast_maintenance, Pprovide_coloring, EID } = data;
+            const { Pmodel, Pstatus, Pfacility, Pbuilding, Proom, Pname, Plast_maintenance, Pprovide_coloring, fileAccepted, EID , page_remain } = data;
     
             // Kiểm tra đầu vào
-            if (!Pmodel || !Plocation || !Pname) {
-                reject({ status: 400, message: 'Pmodel, Plocation, and Pname are required' });
+            if (!Pmodel || !Pfacility || !Pbuilding || !Proom|| !Pname || !fileAccepted || !page_remain) {
+                reject({ status: 400, message: 'Pmodel, Pfacility, Pbuilding, Proom, Pname, fileAccepted, and page_remain are required' });
                 return;
             }
     
@@ -68,10 +68,10 @@ class PrinterService {
 
                 // Câu lệnh SQL chèn máy in
                 const query = `
-                    INSERT INTO PRINTER (Pmodel, Plocation, Pstatus, Pname, Plast_maintenance, Pprovide_coloring, EID)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO PRINTER (Pmodel, Pstatus, Pfacility, Pbuilding, Proom, Pname, Plast_maintenance, Pprovide_coloring, fileAccepted, EID, page_remain)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                 `;
-                const params = [Pmodel, Plocation, Pstatus, Pname, Plast_maintenance || null, Pprovide_coloring || false, EID || null];
+                const params = [Pmodel, Pstatus || 'Active', Pfacility, Pbuilding, Proom, Pname, Plast_maintenance || NULL, Pprovide_coloring || false, fileAccepted, EID , page_remain];
         
                 // Thực thi câu truy vấn
                 client.execute(query, params, (err, result) => {
@@ -87,7 +87,7 @@ class PrinterService {
 
     static updatePrinter(pid, data) {
         return new Promise((resolve, reject) => {
-            const { Pmodel, Plocation, Pname, Pstatus, Plast_maintenance, Pprovide_coloring, EID } = data;
+            const { Pmodel, Pstatus, Pfacility, Pbuilding, Proom, Pname, Plast_maintenance, Pprovide_coloring, fileAccepted, EID , page_remain } = data;
     
             // Kiểm tra máy in có tồn tại không
             const checkQuery = 'SELECT * FROM PRINTER WHERE PID = ?';
@@ -118,17 +118,21 @@ class PrinterService {
                     // Cập nhật thông tin máy in
                     const updateQuery = `
                         UPDATE PRINTER
-                        SET Pmodel = ?, Plocation = ?, Pstatus = ?, Pname = ?, Plast_maintenance = ?, Pprovide_coloring = ?, EID = ?
+                        SET Pmodel = ?, Pstatus  = ?, Pfacility  = ?, Pbuilding  = ?, Proom  = ?, Pname  = ?, Plast_maintenance  = ?, Pprovide_coloring  = ?, fileAccepted  = ?, EID  = ?, page_remain  = ?
                         WHERE PID = ?;
                     `;
                     const params = [
                         Pmodel || existingPrinter[0].Pmodel,
-                        Plocation || existingPrinter[0].Plocation,
-                        Pname || existingPrinter[0].Pname,
                         Pstatus || existingPrinter[0].Pstatus,
+                        Pname || existingPrinter[0].Pname,
+                        Pfacility || existingPrinter[0].Pfacility,
+                        Pbuilding || existingPrinter[0].Pbuilding,
+                        Proom || existingPrinter[0].Proom,
                         Plast_maintenance || existingPrinter[0].Plast_maintenance,
                         Pprovide_coloring || existingPrinter[0].Pprovide_coloring,
+                        fileAccepted || existingPrinter[0].fileAccepted,
                         EID || existingPrinter[0].EID,
+                        page_remain || existingPrinter[0].page_remain,
                         pid
                     ];
         
