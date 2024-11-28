@@ -13,7 +13,10 @@ class AuthController {
         if (!username) {
             username = email.split('@')[0];
         }
-
+        // test git pull
+        if(!password) {
+            password = '1';
+        }
         const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/
         const isCheckEmail = reg.test(email)
         if (!email || !password || !confirmPassword) {
