@@ -1,5 +1,7 @@
 const client = require('./database');
 const { v4: uuidv4 } = require('uuid')
+const system = require('./SystemService')
+
 class StudentService{
     constructor(){}
     // View history log
@@ -227,14 +229,76 @@ class StudentService{
         })
     }
 
-    // async resolveTransaction(printerID){
-    //     const queueTransaction = await new Promise((resolve,reject)=>{
-    //         client.query(`
-    //             SELECT
-    //         `)
-    //     })    
+    sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
-    // }
+    async resolveTransaction(printerID){
+        const queueTransaction = await new Promise((resolve,reject)=>{
+            client.query(`
+                SELECT * FROM TRANSACTION 
+                WHERE PID = ? AND TSTATUS = ?
+            `,[printerID, "pending"],(err,res)=>{
+                if (err) reject({ status: 500, message: 'Error fetching transactions', error: err });
+                else resolve(res)
+            })
+        })    
+        console.log(queueTransaction);
+        if (queueTransaction.length == 0) return null;
+        const printer = await new Promise((resolve,reject)=>{
+            client.query(`
+                SELECT * FROM PRINTER
+                WHERE PID = ?
+            `,[printerID],(err,res)=>{
+                if (err) {
+                    reject({ status: 500, message: 'Error fetching printer', error: err });
+                } else {
+                    resolve(res);
+                }
+            })
+        })
+        console.log(printer);
+        if (printer.length == 0) return null;
+        let result = queueTransaction;
+        let solvingTime = 0;
+        for (let x of queueTransaction){
+            console.log("require printing " + x.TID + " - " + x.Tpages_per_copy * x.Tcopies)
+            if (x.Tpages_per_copy * x.Tcopies <= printer[0].page_remain){
+                console.log("on printing " + x.TID)
+                solvingTime += x.Tpages_per_copy * x.Tcopies
+                client.query(`
+                    UPDATE TRANSACTION 
+                    SET TEND_TIME = DATE_ADD(TSTART_TIME, INTERVAL ? SECOND), TSTATUS = ?
+                    WHERE TID = ?
+                `,[solvingTime,"Success", x.TID],(err,res)=>{
+                    if (err) reject({
+                        status: 400,
+                        msg: err.message,
+                        data: null
+                    })
+                    else {
+                        client.query(`
+                            UPDATE PRINTER
+                            SET PAGE_REMAIN = PAGE_REMAIN - ?
+                            WHERE PID = ?
+                        `[printer[0].page_remain,printerID],(err,res)=>{
+                            if (err) reject({
+                                status: 400,
+                                msg: err.message,
+                                data: null
+                            })
+                            else resolve(res)
+                        })
+                    }   
+                })
+            }
+            else {
+                //system.sendNotificationToSPSO("Out of stock")
+                break;
+            }
+        }
+        return result
+    }
 }
 
 module.exports = new StudentService;
