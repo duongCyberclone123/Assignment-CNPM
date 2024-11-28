@@ -27,4 +27,5 @@ router.post('/uploadFile',upload.single('file'), studentController.uploadFile);
 router.get('/getPrinters',studentController.PrintersInLocation)
 //router.post('/processPrinting/:studentID/:docID',studentController.Printing)
 router.post('/receivePrintingRequest',studentController.receivePrintingRequest)
+router.post('/Printing',studentController.Printing)
 module.exports = router

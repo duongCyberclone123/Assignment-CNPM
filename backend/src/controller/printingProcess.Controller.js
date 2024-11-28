@@ -57,6 +57,32 @@ class StudentController{
             })
         }
     }
+
+    async Printing(req,res){
+        try{
+            const printerID = req.query.pid
+            if (!printerID) {
+                return res.status(400).json({
+                    status: 400,
+                    msg: 'Printer ID is required',
+                    data: null
+                });
+            }
+            const result = await StudentService.resolveTransaction(printerID)
+            return res.status(200).json({
+                status: 200,
+                msg: 'Transaction resolved successfully',
+                data: result
+            });
+        }
+        catch(err){
+            return res.status(404).json({
+                status: 404,
+                msg: err,
+                data: null
+            })
+        }
+    }
 }
 
 module.exports = new StudentController
