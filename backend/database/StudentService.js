@@ -90,14 +90,6 @@ class StudentService{
                         data: null
                     })
                 }
-                else if (res.length !== 0){
-                    console.log('Dup files')
-                    resolve({
-                        status: 400,
-                        msg: 'This file has been uploaded!',
-                        data: null
-                    })
-                }
                 else{
                     try{
                         client.query(
@@ -130,24 +122,85 @@ class StudentService{
         })
     }
 
+    async sortPrintersByLocation(place, building, room) {
+        try {
+            let params = [];
+            let query = 'SELECT * FROM printer';
+            
+            if (place) {
+                params = [place];
+                query += ' WHERE pplace = ?';
+            }
+    
+            if (building && place) {
+                query += ' AND pbuilding = ?';
+            }
+            else if (building) {
+                query += ' WHERE pbuilding = ?';
+                params.push(building);
+            }
+    
+            if (room && (building || place)) {
+                query += ' AND room = ?';
+                params.push(room);
+            }
+            else if (room) {
+                query += ' WHERE proom = ?';
+                params.push(room);
+            }
+            
+            console.log(query);
+            console.log(params);
+            
+            const locationDescription = [place, building, room].filter(Boolean).join(', ');
+    
+            // Sử dụng await để chờ query
+            const result = await new Promise((resolve, reject) => {
+                client.query(query, params, (err, res) => {
+                    if (err) {
+                        reject({
+                            status: 400,
+                            msg: err.message,
+                            data: null
+                        });
+                    } else {
+                        resolve({
+                            status:200,
+                            msg: "Printers in " + locationDescription,
+                            data: res
+                        });
+                    }
+                });
+            });
+    
+            // Sau khi nhận được kết quả từ query
+            return result
+        } catch (err) {
+            return {
+                status: 400,
+                msg: err.message,
+                data: null
+            };
+        }
+    }
+    
+
     async choosePrinter(location, PrintingLog){
         if(PrintingLog.isColorPrinting){
             const params = [
                 location,
                 PrintingLog.numPagePrint * PrintingLog.numCopy,
-                PrintingLog.paperSize,
                 PrintingLog.isColorPrinting,
-                true, true
+                'active'
             ]
             return new Promise((resolve,reject)=>{
                     client.query(`
                     SELECT * FROM printer
                     WHERE plocation = ? 
                     and pageremain >= ? 
-                    and find_in_set(?, fileAccepted) > 0
                     and provideColoring = ?
-                    and status = ?
-                    ORDER BY   queue    ASC, pageremain DESC
+                    and pstatus = ?
+                    ORDER BY pageremain DESC
                     LIMIT 1
                 `,params,(err,res)=> {
                     if (err){
@@ -166,7 +219,7 @@ class StudentService{
                         })
                     }
                     else {
-                        
+                        return res;
                     }
                 })
             })
@@ -174,21 +227,60 @@ class StudentService{
         const params = [
             location,
             PrintingLog.numPagePrint * PrintingLog.numCopy,
-            PrintingLog.paperSize
+            'active'
         ]
         return new Promise(`
             SELECT * FROM printer
             WHERE plocation = ? 
-            and pageremain >= ? 
-            and find_in_set(?, fileAccepted) > 0
+                    and pageremain >= ? 
+                    and pstatus = ?
+            ORDER BY pageremain DESC
             LIMIT 1
         `, params,(err,res) => {
-
+            if (err){
+                reject({
+                    status: 400,
+                    msg: err.message,
+                    data: null
+                })
+            }
+            else if (res.length === 0){
+                console.log('No printers available now!')
+                resolve({
+                    status: 400,
+                    msg: 'No printers available now!',
+                    data: null
+                })
+            }
+            else {
+                return res;
+            }
         })
     }
 
-    async Printing(){
-
+    async Printing(location, PrintingLog, docID, studentID){
+        const printer = await this.choosePrinter(location, PrintingLog)
+        return new Promise((resolve,reject)=>{
+            client.query(`
+                INSERT INTO TRANSACTION(tpages_per_copy, tcopies, tstatus, tstart_time, tend_time, isdoublesize, ishorizon, iscoloring,sid,did,pid)
+                values(?,?,?,?,?,?,?,?,?,?,?)
+            `,[PrintingLog.tpage_per_copy, tcopies, tstatus, tstart_time, tend_time,isdoubleside, ishorrizon, iscoloring,printer.sid,docID, studentID], (err, res)=>{
+                if (err) {
+                    reject({
+                        status: 400,
+                        msg: err.message,
+                        data: null
+                    })
+                }
+                else{
+                    resolve({
+                        status: 200,
+                        msg: 'Printing success',
+                        data: res
+                    })
+                }
+            })
+        })
     }
 }
 

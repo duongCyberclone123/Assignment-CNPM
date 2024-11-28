@@ -133,7 +133,7 @@ class AuthController {
             res.status(200).json({
                 status: 200,
                 msg: 'Authentication successful',
-                data: { token },
+                data: {token, loadedUser},
             });
         } catch (err) {
             // Bắt và xử lý lỗi
