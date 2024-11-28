@@ -23,9 +23,6 @@ const FileUpload = () => {
         formData.append("dsize", `${(file.size / 1024).toFixed(2)} KB`); // Convert size to KB and format it
         formData.append("dformat", file.name.split('.').pop()); // Extract file extension
         formData.append("dpage_num", 0); // Default page number if unknown
-        const date = new Date();
-        const mysqlDatetime = date.toISOString().slice(0, 19).replace('T', ' ');
-        formData.append("dupload_time", mysqlDatetime);
         try {
             const response = await axios.post("http://localhost:8000/api/printing/uploadFile?uid=2001", formData, {
                 headers: {

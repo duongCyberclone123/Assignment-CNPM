@@ -1,11 +1,18 @@
 const mysql = require('mysql2');
 
-// Setup pgAdmin4 and connect individual
+const url = require('url');
+const DATABASE_URL='mysql://root:JVcPaHWHYYNQIAspVsnmhwupXcTXwrSD@junction.proxy.rlwy.net:28524/railway'
+
+const parsedUrl = new URL(DATABASE_URL);
 const client = mysql.createConnection({
-    host: 'localhost',    // Địa chỉ máy chủ MySQL
-    user: 'root',         // Tên người dùng MySQL
-    password: '12345678', // Mật khẩu MySQL
-    database: 'cnpm'   // Tên database
+
+    host: parsedUrl.hostname,    // Địa chỉ máy chủ MySQL
+    user: parsedUrl.username,         // Tên người dùng MySQL
+    password: parsedUrl.password, // Mật khẩu MySQL
+    database: parsedUrl.pathname.split('/')[1],   // Tên database
+    port: parsedUrl.port,
+    multipleStatements: true
+
 });
 
 client.connect((err) => {

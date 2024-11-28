@@ -23,7 +23,10 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-router.post('/uploadFile?:studentID',upload.single('file'), studentController.uploadFile);
+router.post('/uploadFile',upload.single('file'), studentController.uploadFile);
 router.get('/getPrinters',studentController.PrintersInLocation)
-router.post('/processPrinting/:studentID/:docID',studentController.Printing)
+//router.post('/processPrinting/:studentID/:docID',studentController.Printing)
+router.post('/receivePrintingRequest',studentController.receivePrintingRequest)
+router.post('/Printing',studentController.Printing)
+router.get('/viewHistoryLog',studentController.ViewHistoryLog)
 module.exports = router
