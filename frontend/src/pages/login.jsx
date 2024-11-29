@@ -23,13 +23,16 @@ const Login = () => {
         // Lưu token vào localStorage để sử dụng cho các yêu cầu API sau
         localStorage.setItem('token', token);
 
+        // Lưu thông tin người dùng vào localStorage
+        localStorage.setItem('userData', JSON.stringify(loadedUser));
+
         // Kiểm tra ID và phân loại vai trò người dùng
-        if (loadedUser.ID >= 1 && loadedUser.ID <= 1999) {
-          // Vai trò là student
-          navigate('/student-dashboard');
-        } else if (loadedUser.ID >= 2000 && loadedUser.ID <= 5000) {
+        if (loadedUser.ID >= 1 && loadedUser.ID <= 1999) { 
           // Vai trò là spso
           navigate('/spsodashboard');
+        } else if (loadedUser.ID >= 2000 && loadedUser.ID <= 5000) {
+          // Vai trò là student
+          navigate('/student-dashboard');
         } else {
           alert('Không xác định vai trò người dùng.');
         }
