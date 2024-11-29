@@ -145,7 +145,8 @@ class StudentService{
                     INSERT INTO TRANSACTION (tstatus, tis_double_size, ishorizon,iscoloring, tpage_size,tpages_per_copy, tcopies,tstart_time, tend_time, pid, did, sid)
                     VALUE (?,?,?,?,?,?,?,?,?,?,?,?);
             `,['pending', PrintingLog.isdoublesize, 
-                PrintingLog.ishorizon,PrintingLog.iscoloring,PrintingLog.pagesize, PrintingLog.tpages_per_copy, PrintingLog.tcopies, 
+                PrintingLog.ishorizon,PrintingLog.iscoloring,PrintingLog.pagesize, 
+                PrintingLog.tpages_per_copy, PrintingLog.tcopies, 
                 mysqlDatetime, null,
                 PrintingLog.pid, PrintingLog.did, PrintingLog.sid],
                 async (err, res)=>{
@@ -158,10 +159,10 @@ class StudentService{
                     }
                     else{
                         client.query(`
-                            UPDATE PRINTER
-                            SET    page_remain = page_remain - ?
-                            WHERE  pid = ?
-                        `,[PrintingLog.tpages_per_copy * PrintingLog.tcopies, PrintingLog.pid],(err,res)=>{
+                            UPDATE STUDENT
+                            SET Savailable_pages = Savailable_pages - ?
+                            WHERE id = ?
+                        `,[PrintingLog.tpages_per_copy * PrintingLog.tcopies,PrintingLog.sid],(err,res)=>{
                             if (err){
                                 reject({
                                     status: 400,
@@ -169,26 +170,11 @@ class StudentService{
                                     data: null
                                 })
                             }
-                            else {
-                                client.query(`
-                                    UPDATE STUDENT
-                                    SET Savailable_pages = Savailable_pages - ?
-                                    WHERE id = ?
-                                `,[PrintingLog.tpages_per_copy * PrintingLog.tcopies,PrintingLog.sid],(err,res)=>{
-                                    if (err){
-                                        reject({
-                                            status: 400,
-                                            msg: err.message,
-                                            data: null
-                                        })
-                                    }
-                                    else resolve({
-                                        status: 200,
-                                        msg: 'Student Effected',
-                                        data: res
-                                    })
-                                })
-                            }
+                            else resolve({
+                                status: 200,
+                                msg: 'Student Effected',
+                                data: res
+                            })
                         })
                     }
             })
@@ -211,25 +197,11 @@ class StudentService{
         })    
         console.log(queueTransaction);
         if (queueTransaction.length == 0) return null;
-        const printer = await new Promise((resolve,reject)=>{
-            client.query(`
-                SELECT * FROM PRINTER
-                WHERE PID = ?
-            `,[printerID],(err,res)=>{
-                if (err) {
-                    reject({ status: 500, message: 'Error fetching printer', error: err });
-                } else {
-                    resolve(res);
-                }
-            })
-        })
-        console.log(printer);
-        if (printer.length == 0) return null;
         let result = queueTransaction;
         let solvingTime = 0;
         for (let x of queueTransaction){
             console.log("require printing " + x.TID + " - " + x.Tpages_per_copy * x.Tcopies)
-            if (x.Tpages_per_copy * x.Tcopies <= printer[0].page_remain){
+            if (true){
                 console.log("on printing " + x.TID)
                 solvingTime += x.Tpages_per_copy * x.Tcopies
                 client.query(`
@@ -243,18 +215,7 @@ class StudentService{
                         data: null
                     })
                     else {
-                        client.query(`
-                            UPDATE PRINTER
-                            SET PAGE_REMAIN = PAGE_REMAIN - ?
-                            WHERE PID = ?
-                        `[printer[0].page_remain,printerID],(err,res)=>{
-                            if (err) reject({
-                                status: 400,
-                                msg: err.message,
-                                data: null
-                            })
-                            else resolve(res)
-                        })
+                        resolve(res)
                     }   
                 })
             }
