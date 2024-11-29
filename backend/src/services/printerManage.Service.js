@@ -179,6 +179,51 @@ class PrinterService {
         });
     }
     
+    async listAllPrintingLog(Log){
+        let query = 'SELECT * FROM TRANSACTION'
+        let params = []
+        if (Log.sid) {
+            query += ' AND SID = ?'
+            params.push(Log.sid)
+        }
+        if (Log.pid) {
+            query += ' AND PID = ?'
+            params.push(Log.pid)
+        }
+        if (Log.pid) {
+            query += ' AND PID = ?'
+            params.push(Log.pid)
+        }
+        if (Log.startTime){
+            query += ' AND TSTART_TIME >= ?'
+            params.push(Log.startTime)
+        }
+        if (Log.endTime){
+            query += ' AND TEND_TIME <= ?'
+            params.push(Log.endTime)
+        }
+        return new Promise((resolve, reject) => {
+            client.query(
+                query, 
+                params,
+                (err, res) => {
+                    if (err) {
+                        reject({
+                            status: 400,
+                            msg: err.message,
+                            data: null
+                        });
+                    } else {
+                        resolve({
+                            status: 200,
+                            msg: 'Fetch success',
+                            data: res
+                        });
+                    }
+                }
+            );
+        });
+    }
 }
 
 module.exports = PrinterService;

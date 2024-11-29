@@ -89,6 +89,24 @@ class PrinterController {
             });
         }
     };
+
+    async ViewHistoryLog(req, res){
+        try{
+            const log = await PrinterService.listAllPrintingLog(req.body);
+            return res.status(200).json({
+                status: 200,
+                msg: "View Log",
+                data: log
+            })
+        }
+        catch(err){
+            return res.status(404).json({
+                status: 404,
+                msg: err,
+                data: null
+            })
+        }
+    }
 }
 
 module.exports = new PrinterController();
