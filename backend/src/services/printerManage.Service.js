@@ -45,19 +45,11 @@ class PrinterService {
     
     static createPrinter(data) {
         return new Promise((resolve, reject) => {
-<<<<<<< HEAD
-            const { Pmodel, Pstatus, Pfacility, Pbuilding, Proom, Pname, Plast_maintenance, Pprovide_coloring, fileAccepted, EID , page_remain } = data;
-    
-            // Kiểm tra đầu vào
-            if (!Pmodel || !Pfacility || !Pbuilding || !Proom|| !Pname || !fileAccepted || !page_remain) {
-                reject({ status: 400, message: 'Pmodel, Pfacility, Pbuilding, Proom, Pname, fileAccepted, and page_remain are required' });
-=======
             const { Pmodel, Pstatus, Pfacility, Pbuilding, Proom, Pname, Plast_maintenance, Pprovide_coloring, EID } = data;
     
             // Kiểm tra đầu vào
             if (!Pmodel || !Pfacility || !Pbuilding || !Proom|| !Pname ) {
                 reject({ status: 400, message: 'Pmodel, Pfacility, Pbuilding, Proom and Pname are required' });
->>>>>>> 19f948a79fa00538a583bc804ff45ec3917a9e6c
                 return;
             }
     
@@ -76,17 +68,10 @@ class PrinterService {
 
                 // Câu lệnh SQL chèn máy in
                 const query = `
-<<<<<<< HEAD
-                    INSERT INTO PRINTER (Pmodel, Pstatus, Pfacility, Pbuilding, Proom, Pname, Plast_maintenance, Pprovide_coloring, fileAccepted, EID, page_remain)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-                `;
-                const params = [Pmodel, Pstatus || 'Active', Pfacility, Pbuilding, Proom, Pname, Plast_maintenance || NULL, Pprovide_coloring || false, fileAccepted, EID , page_remain];
-=======
                     INSERT INTO PRINTER (Pmodel, Pstatus, Pfacility, Pbuilding, Proom, Pname, Plast_maintenance, Pprovide_coloring, EID)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
                 `;
                 const params = [Pmodel, Pstatus || 'Active', Pfacility, Pbuilding, Proom, Pname, Plast_maintenance || NULL, Pprovide_coloring || false, EID];
->>>>>>> 19f948a79fa00538a583bc804ff45ec3917a9e6c
         
                 // Thực thi câu truy vấn
                 client.execute(query, params, (err, result) => {
@@ -102,11 +87,7 @@ class PrinterService {
 
     static updatePrinter(pid, data) {
         return new Promise((resolve, reject) => {
-<<<<<<< HEAD
-            const { Pmodel, Pstatus, Pfacility, Pbuilding, Proom, Pname, Plast_maintenance, Pprovide_coloring, fileAccepted, EID , page_remain } = data;
-=======
             const { Pmodel, Pstatus, Pfacility, Pbuilding, Proom, Pname, Plast_maintenance, Pprovide_coloring, EID } = data;
->>>>>>> 19f948a79fa00538a583bc804ff45ec3917a9e6c
     
             // Kiểm tra máy in có tồn tại không
             const checkQuery = 'SELECT * FROM PRINTER WHERE PID = ?';
@@ -137,11 +118,7 @@ class PrinterService {
                     // Cập nhật thông tin máy in
                     const updateQuery = `
                         UPDATE PRINTER
-<<<<<<< HEAD
-                        SET Pmodel = ?, Pstatus  = ?, Pfacility  = ?, Pbuilding  = ?, Proom  = ?, Pname  = ?, Plast_maintenance  = ?, Pprovide_coloring  = ?, fileAccepted  = ?, EID  = ?, page_remain  = ?
-=======
                         SET Pmodel = ?, Pstatus  = ?, Pfacility  = ?, Pbuilding  = ?, Proom  = ?, Pname  = ?, Plast_maintenance  = ?, Pprovide_coloring  = ?, EID  = ?
->>>>>>> 19f948a79fa00538a583bc804ff45ec3917a9e6c
                         WHERE PID = ?;
                     `;
                     const params = [
@@ -153,13 +130,7 @@ class PrinterService {
                         Proom || existingPrinter[0].Proom,
                         Plast_maintenance || existingPrinter[0].Plast_maintenance,
                         Pprovide_coloring || existingPrinter[0].Pprovide_coloring,
-<<<<<<< HEAD
-                        fileAccepted || existingPrinter[0].fileAccepted,
                         EID || existingPrinter[0].EID,
-                        page_remain || existingPrinter[0].page_remain,
-=======
-                        EID || existingPrinter[0].EID,
->>>>>>> 19f948a79fa00538a583bc804ff45ec3917a9e6c
                         pid
                     ];
         
