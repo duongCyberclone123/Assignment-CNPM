@@ -45,3 +45,13 @@ export const deletePrinter = async (pid) => {
     throw error;  // Ném lỗi lên
   }
 };
+// Hàm lấy lịch sử in
+export const viewLog = async () => {
+  try {
+    const response = await axios.get(API_URL/viewLog); // Gọi API lấy tất cả lịch sử máy in
+    return response.data;  
+  } catch (error) {
+    console.error('Error fetching printers log:', error);
+    throw error;  
+  }
+};
