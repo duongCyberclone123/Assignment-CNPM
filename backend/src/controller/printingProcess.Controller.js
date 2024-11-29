@@ -1,6 +1,34 @@
 const StudentService = require('../../database/StudentService')
-
+const PRICE_PER_PAGE = 500;
 class StudentController{
+    //Buy pages
+    purchasePaper = async function(req, res) {
+        try {
+            const { sid, numbersOfPages, PMmethod } = req.body;
+    
+            // Kiểm tra dữ liệu đầu vào
+            if (!sid || !numbersOfPages || !PMmethod) {
+                return res.status(400).json({
+                    status: 400,
+                    msg: "Invalid student ID or page count",
+                    data: null
+                });
+            }
+            const pagesPurchased = numbersOfPages * 500;
+    
+            // Gọi dịch vụ
+            const result = await StudentService.buyPaper(sid, pagesPurchased, PMmethod);
+            res.status(result.status).json(result);
+        } catch (err) {
+            console.error("Error during paper purchase:", err);
+            res.status(500).json({
+                status: 500,
+                msg: "Internal Server Error",
+                data: null
+            });
+        }
+    }
+
     // View History Log
     async ViewHistoryLog(req, res){
         try{

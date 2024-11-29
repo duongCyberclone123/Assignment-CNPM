@@ -1,9 +1,55 @@
 const client = require('./database');
 const { v4: uuidv4 } = require('uuid')
-const system = require('./SystemService')
 
 class StudentService{
     constructor(){}
+    // Buy pages
+    buyPaper = async function(sid, pagesPurchased, PMmethod)  {
+        try {
+            // 1. Insert giao dịch thanh toán vào bảng PAYMENT
+            const paymentQuery = `
+                INSERT INTO PAYMENT (PMtime, PMpages_purchased, PMmethod, SID)
+                VALUES (NOW(), ?, ?, ?)
+            `;
+            client.query(paymentQuery, [pagesPurchased, PMmethod, sid]);
+    
+            // 2. Cập nhật số lượng trang trong bảng STUDENT
+            const updateStudentQuery = `
+                UPDATE STUDENT
+                SET Savailable_pages = Savailable_pages + ?
+                WHERE ID = ?
+            `;
+            const numbersOfPages = pagesPurchased / 500;
+            client.query(updateStudentQuery, [numbersOfPages, sid]);
+    
+            const studentQuery = `
+                SELECT * FROM STUDENT
+                WHERE ID = ?
+            `
+            const student = client.query(studentQuery, [sid]);
+            console.log(student);
+    
+            // 3. Hoàn thành
+            return {
+                status: 200,
+                msg: "Paper purchased successfully",
+                data: {
+                    student: student[0],
+                    numbersOfPages : numbersOfPages,
+                    pagesPurchased: pagesPurchased,
+                    PMmethod: PMmethod,
+                }
+            };
+        } catch (err) {
+            console.error("Error during paper purchase:", err);
+            return {
+                status: 500,
+                msg: "Internal Server",
+                data: null
+            };
+        }
+    }
+
     // View history log
     async listAllPrintingLog(studentID, Log){
         let query = 'SELECT * FROM TRANSACTION WHERE SID = ?'
@@ -218,10 +264,6 @@ class StudentService{
                         resolve(res)
                     }   
                 })
-            }
-            else {
-                //system.sendNotificationToSPSO("Out of stock")
-                break;
             }
         }
         return result
