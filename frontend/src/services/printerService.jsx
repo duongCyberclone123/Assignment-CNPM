@@ -26,19 +26,19 @@ export const addPrinter = async (printerData) => {
 
 // Hàm cập nhật thông tin máy in
 export const updatePrinter = async (pid, printerData) => {
-  try {
-    const response = await axios.put(`${API_URL}/update/${pid}`, printerData); // Gửi PUT request để cập nhật
-    return response.data;  // Trả về kết quả cập nhật
-  } catch (error) {
-    console.error('Error updating printer:', error);
-    throw error;  // Ném lỗi lên
-  }
-};
-
+    try {
+      const response = await axios.put(`${API_URL}/update/${pid}`, printerData);
+      return response.data;  // Trả về dữ liệu từ API
+    } catch (error) {
+      console.error('Error updating printer:', error.response ? error.response.data : error.message);
+      throw error;  // Ném lỗi lên để xử lý ngoài
+    }
+  };
+  
 // Hàm xóa máy in
 export const deletePrinter = async (pid) => {
   try {
-    const response = await axios.delete(`${API_URL}/delete/${pid}`); // Gửi DELETE request để xóa máy in
+    const response = await axios.delete(`${API_URL}/${pid}`); // Gửi DELETE request để xóa máy in
     return response.data;  // Trả về kết quả xóa
   } catch (error) {
     console.error('Error deleting printer:', error);
