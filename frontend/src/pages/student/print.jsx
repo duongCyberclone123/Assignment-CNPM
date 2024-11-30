@@ -28,9 +28,15 @@ const Print = () => {
             margin: '0 auto',      // Center the Box horizontally in the viewport
             flexDirection: 'column'
         }}>
-            <Calendar />
+            <div style={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'row' }}>
+                <div style={{marginLeft: '20px'}}>
+                    <Calendar scale={1.2} />
+                </div>
 
-            <FileUpload />
+                <div style={{ flex: 1, height: '157px'}}>
+                    <FileUpload />
+                </div>
+            </div>
         </div>
     </>);
 }

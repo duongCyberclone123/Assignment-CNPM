@@ -24,7 +24,6 @@ const Login = () => {
         localStorage.setItem('token', token);
         localStorage.setItem('ID', loadedUser.ID);
         
-
         // Kiểm tra ID và phân loại vai trò người dùng
         if (loadedUser.ID >= 1 && loadedUser.ID <= 1999) {
           // Vai trò là student
