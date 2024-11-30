@@ -27,10 +27,11 @@ const Login = () => {
         // Kiểm tra ID và phân loại vai trò người dùng
         if (loadedUser.ID >= 1 && loadedUser.ID <= 1999) {
           // Vai trò là student
-          navigate('/student-dashboard');
+          
+          navigate('/spsodashboard');
         } else if (loadedUser.ID >= 2000 && loadedUser.ID <= 5000) {
           // Vai trò là spso
-          navigate('/spsodashboard');
+          navigate('/student-dashboard');
         } else {
           alert('Không xác định vai trò người dùng.');
         }
@@ -39,7 +40,7 @@ const Login = () => {
       }
     } catch (error) {
       console.error('Lỗi khi đăng nhập:', error);
-      alert('Đã xảy ra lỗi. Vui lòng thử lại!');
+      alert(err);
     }
   };
 

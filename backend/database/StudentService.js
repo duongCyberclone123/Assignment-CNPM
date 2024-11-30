@@ -1,61 +1,75 @@
 const client = require('./database');
 const { v4: uuidv4 } = require('uuid')
+
 class StudentService{
     constructor(){}
-    // View history log
-    async listPrintingLogByPrinter(studentID, printerID){
-        return new Promise((resolve, reject) => {
-            client.query(
-                `SELECT * FROM transaction`, 
-                [studentID, printerID],
-                (err, res) => {
-                    if (err) {
-                        reject({
-                            status: 400,
-                            msg: err.message,
-                            data: null
-                        });
-                    } else {
-                        resolve({
-                            status: 200,
-                            msg: 'Fetch success',
-                            data: res
-                        });
-                    }
-                }
-            );
-        });
-    }
+    // Buy pages
+    buyPaper = async function(sid, pagesPurchased, PMmethod)  {
+        try {
+            // 1. Insert giao dịch thanh toán vào bảng PAYMENT
+            const paymentQuery = `
+                INSERT INTO PAYMENT (PMtime, PMpages_purchased, PMmethod, SID)
+                VALUES (NOW(), ?, ?, ?)
+            `;
+            client.query(paymentQuery, [pagesPurchased, PMmethod, sid]);
     
-    async listPrintingLogByTime(studentID, startTime, endTime){
-        return new Promise((resolve, reject) => {
-            client.query(
-                `SELECT * FROM transaction`, 
-                [studentID, startTime, endTime],
-                (err, res) => {
-                    if (err) {
-                        reject({
-                            status: 400,
-                            msg: err.message,
-                            data: null
-                        });
-                    } else {
-                        resolve({
-                            status: 200,
-                            msg: 'Fetch success',
-                            data: res
-                        });
-                    }
+            // 2. Cập nhật số lượng trang trong bảng STUDENT
+            const updateStudentQuery = `
+                UPDATE STUDENT
+                SET Savailable_pages = Savailable_pages + ?
+                WHERE ID = ?
+            `;
+            const numbersOfPages = pagesPurchased / 500;
+            client.query(updateStudentQuery, [numbersOfPages, sid]);
+    
+            const studentQuery = `
+                SELECT * FROM STUDENT
+                WHERE ID = ?
+            `
+            const student = client.query(studentQuery, [sid]);
+            console.log(student);
+    
+            // 3. Hoàn thành
+            return {
+                status: 200,
+                msg: "Paper purchased successfully",
+                data: {
+                    student: student[0],
+                    numbersOfPages : numbersOfPages,
+                    pagesPurchased: pagesPurchased,
+                    PMmethod: PMmethod,
                 }
-            );
-        });
+            };
+        } catch (err) {
+            console.error("Error during paper purchase:", err);
+            return {
+                status: 500,
+                msg: "Internal Server",
+                data: null
+            };
+        }
     }
 
-    async listAllPrintingLog(studentID){
+    // View history log
+    async listAllPrintingLog(studentID, Log){
+        let query = 'SELECT * FROM TRANSACTION WHERE SID = ?'
+        let params = [studentID]
+        if (Log.pid) {
+            query += ' AND PID = ?'
+            params.push(Log.pid)
+        }
+        if (Log.startTime){
+            query += ' AND TSTART_TIME >= ?'
+            params.push(Log.startTime)
+        }
+        if (Log.endTime){
+            query += ' AND TEND_TIME <= ?'
+            params.push(Log.endTime)
+        }
         return new Promise((resolve, reject) => {
             client.query(
-                `SELECT * FROM transaction`, 
-                [studentID, startTime, endTime],
+                query, 
+                params,
                 (err, res) => {
                     if (err) {
                         reject({
@@ -78,58 +92,42 @@ class StudentService{
     async uploadFile(studentID, newFile){
         studentID = parseInt(studentID)
         return new Promise((resolve,reject) => {
-            const {dname, dsize, dformat, dpage_num, dupload_time} = newFile
-            client.query(`
-                SELECT * FROM document
-                WHERE dname = ? and sid = ?
-            `, [dname, studentID], (err, res) =>{
-                if (err){
-                    reject({
-                        status: 400,
-                        msg: err.message,
-                        data: null
-                    })
-                }
-                else{
-                    try{
-                        client.query(
-                            `INSERT INTO document(dname, dsize, dformat, dpage_num, dupload_time,sid) VALUES (?,?, ?, ?, ?, ?)`,
-                            [dname, parseInt(dsize), dformat, dpage_num, dupload_time, studentID],
-                            async (err, res) => {
-                                if (err) {
-                                    console.log(err)
-                                    reject({
-                                        status: 400,
-                                        msg: err.message,
-                                        data: null
-                                    })
-                                } else {
-                                    resolve({
-                                        status: 200,
-                                        msg: "Upload File successfully!",
-                                        data: newFile
-                                    })
-                                }
-                            }
-                        )
-                        client.end;
+            const {dname, dsize, dformat, dpage_num} = newFile
+            const date = new Date();
+            const dupload_time = date.toISOString().slice(0, 19).replace('T', ' ');
+            client.query(
+                `INSERT INTO DOCUMENT(dname, dsize, dformat, dpage_num, dupload_time,sid) 
+                VALUES (?,?, ?, ?, ?, ?);`,
+                [dname, parseInt(dsize), dformat, dpage_num, dupload_time, studentID],
+                (err, res) => {
+                    if (err) {
+                        console.log(err)
+                        reject({
+                            status: 400,
+                            msg: err.message,
+                            data: null
+                        })
+                    } else {
+                        resolve({
+                            status: 200,
+                            msg: "Upload File successfully!",
+                            data: newFile
+                        })
                     }
-                catch(e){
-                    reject(e)
                 }
-                }
-            })
+            )
+            client.end;
         })
     }
 
     async sortPrintersByLocation(place, building, room) {
         try {
             let params = [];
-            let query = 'SELECT * FROM printer';
+            let query = 'SELECT * FROM PRINTER';
             
             if (place) {
                 params = [place];
-                query += ' WHERE pplace = ?';
+                query += ' WHERE pfacility = ?';
             }
     
             if (building && place) {
@@ -141,7 +139,7 @@ class StudentService{
             }
     
             if (room && (building || place)) {
-                query += ' AND room = ?';
+                query += ' AND proom = ?';
                 params.push(room);
             }
             else if (room) {
@@ -183,26 +181,21 @@ class StudentService{
             };
         }
     }
-    
 
-    async choosePrinter(location, PrintingLog){
-        if(PrintingLog.isColorPrinting){
-            const params = [
-                location,
-                PrintingLog.numPagePrint * PrintingLog.numCopy,
-                PrintingLog.isColorPrinting,
-                'active'
-            ]
-            return new Promise((resolve,reject)=>{
-                    client.query(`
-                    SELECT * FROM printer
-                    WHERE plocation = ? 
-                    and pageremain >= ? 
-                    and provideColoring = ?
-                    and pstatus = ?
-                    ORDER BY pageremain DESC
-                    LIMIT 1
-                `,params,(err,res)=> {
+    async receivePrintingRequest(PrintingLog){
+        console.log(PrintingLog)
+        const date = new Date();
+        const mysqlDatetime = date.toISOString().slice(0, 19).replace('T', ' ');
+        return new Promise((resolve, reject) => {
+            client.query(`
+                    INSERT INTO TRANSACTION (tstatus, tis_double_size, ishorizon,iscoloring, tpage_size,tpages_per_copy, tcopies,tstart_time, tend_time, pid, did, sid)
+                    VALUE (?,?,?,?,?,?,?,?,?,?,?,?);
+            `,['pending', PrintingLog.isdoublesize, 
+                PrintingLog.ishorizon,PrintingLog.iscoloring,PrintingLog.pagesize, 
+                PrintingLog.tpages_per_copy, PrintingLog.tcopies, 
+                mysqlDatetime, null,
+                PrintingLog.pid, PrintingLog.did, PrintingLog.sid],
+                async (err, res)=>{
                     if (err){
                         reject({
                             status: 400,
@@ -210,77 +203,70 @@ class StudentService{
                             data: null
                         })
                     }
-                    else if (res.length === 0){
-                        console.log('No printers available now!')
-                        resolve({
-                            status: 400,
-                            msg: 'No printers available now!',
-                            data: null
+                    else{
+                        client.query(`
+                            UPDATE STUDENT
+                            SET Savailable_pages = Savailable_pages - ?
+                            WHERE id = ?
+                        `,[PrintingLog.tpages_per_copy * PrintingLog.tcopies,PrintingLog.sid],(err,res)=>{
+                            if (err){
+                                reject({
+                                    status: 400,
+                                    msg: err.message,
+                                    data: null
+                                })
+                            }
+                            else resolve({
+                                status: 200,
+                                msg: 'Student Effected',
+                                data: res
+                            })
                         })
                     }
-                    else {
-                        return res;
-                    }
-                })
             })
-        }
-        const params = [
-            location,
-            PrintingLog.numPagePrint * PrintingLog.numCopy,
-            'active'
-        ]
-        return new Promise(`
-            SELECT * FROM printer
-            WHERE plocation = ? 
-                    and pageremain >= ? 
-                    and pstatus = ?
-            ORDER BY pageremain DESC
-            LIMIT 1
-        `, params,(err,res) => {
-            if (err){
-                reject({
-                    status: 400,
-                    msg: err.message,
-                    data: null
-                })
-            }
-            else if (res.length === 0){
-                console.log('No printers available now!')
-                resolve({
-                    status: 400,
-                    msg: 'No printers available now!',
-                    data: null
-                })
-            }
-            else {
-                return res;
-            }
         })
     }
 
-    async Printing(location, PrintingLog, docID, studentID){
-        const printer = await this.choosePrinter(location, PrintingLog)
-        return new Promise((resolve,reject)=>{
+    sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async resolveTransaction(printerID){
+        const queueTransaction = await new Promise((resolve,reject)=>{
             client.query(`
-                INSERT INTO TRANSACTION(tpages_per_copy, tcopies, tstatus, tstart_time, tend_time, isdoublesize, ishorizon, iscoloring,sid,did,pid)
-                values(?,?,?,?,?,?,?,?,?,?,?)
-            `,[PrintingLog.tpage_per_copy, tcopies, tstatus, tstart_time, tend_time,isdoubleside, ishorrizon, iscoloring,printer.sid,docID, studentID], (err, res)=>{
-                if (err) {
-                    reject({
+                SELECT * FROM TRANSACTION 
+                WHERE PID = ? AND TSTATUS = ?
+            `,[printerID, "pending"],(err,res)=>{
+                if (err) reject({ status: 500, message: 'Error fetching transactions', error: err });
+                else resolve(res)
+            })
+        })    
+        console.log(queueTransaction);
+        if (queueTransaction.length == 0) return null;
+        let result = queueTransaction;
+        let solvingTime = 0;
+        for (let x of queueTransaction){
+            console.log("require printing " + x.TID + " - " + x.Tpages_per_copy * x.Tcopies)
+            if (true){
+                console.log("on printing " + x.TID)
+                solvingTime += x.Tpages_per_copy * x.Tcopies
+                client.query(`
+                    UPDATE TRANSACTION 
+                    SET TEND_TIME = DATE_ADD(TSTART_TIME, INTERVAL ? SECOND), TSTATUS = ?
+                    WHERE TID = ?
+                `,[solvingTime,"Success", x.TID],(err,res)=>{
+                    if (err) reject({
                         status: 400,
                         msg: err.message,
                         data: null
                     })
-                }
-                else{
-                    resolve({
-                        status: 200,
-                        msg: 'Printing success',
-                        data: res
-                    })
-                }
-            })
-        })
+                    else {
+                        resolve(res)
+                    }   
+                })
+            }
+        }
+        return result
     }
 }
 
