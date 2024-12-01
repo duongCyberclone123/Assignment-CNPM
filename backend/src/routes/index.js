@@ -3,6 +3,7 @@ const paymentRoute = require('./payment.route');
 const printingRoute = require('./printingProcess');
 const printerManage = require('./printerManage.route');
 const payment = require('./payment.route')
+const systemManage = require('./systemManage.route')
 
 
 function route(app) {
@@ -11,6 +12,7 @@ function route(app) {
     app.use('/api/printing',printingRoute);
     app.use('/api/printers', printerManage);
     app.use('/api/payment',payment);
+    app.use('/api/system', systemManage);
 }
 
 module.exports = route;
