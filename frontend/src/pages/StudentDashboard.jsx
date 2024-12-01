@@ -1,7 +1,7 @@
 import React from 'react';
-import { Button, Typography, Box, Container, AppBar, Toolbar, IconButton, Avatar } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
+import { Typography, Box, Container} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 
 const StudentDashboard = () => {
   const navigate = useNavigate(); // Hook để điều hướng
@@ -18,9 +18,8 @@ const StudentDashboard = () => {
     navigate('/');
   };
 
-  // Giả sử tên người dùng và ảnh đại diện
-  const userName = 'Nguyễn Văn A';
-  const userAvatar = 'https://i.pravatar.cc/150?img=3'; // Hình ảnh avatar giả
+  const menuItems = ['Trang chủ', 'In tài liệu', 'Lịch sử in', 'Mua trang in'];
+  const routes = ['/home', '/print', '/history', '/purchase'];
 
   return (
     <>
@@ -38,65 +37,13 @@ const StudentDashboard = () => {
       </style>
 
       {/* Thanh điều hướng */}
-      <AppBar position="fixed" sx={{ backgroundColor: '#000', boxShadow: 'none' }}>
-        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          {/* Thanh bên trái: Logo và các nút điều hướng */}
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton color="inherit" edge="start" sx={{ mr: 0 }}>
-              <MenuIcon />
-            </IconButton>
-            <img
-              src="https://hcmut.edu.vn/img/nhanDienThuongHieu/01_logobachkhoatoi.png"
-              alt="HCMUT Logo"
-              style={{ width: '100px', marginRight: '20px' }} // Tăng khoảng cách giữa logo và các nút
-            />
-            <Typography variant="h3" sx={{ flexGrow: 1, fontSize: '30px' }}>
-              SPSS
-            </Typography>
+      <Navbar
+        title="STUDENT PORTAL"
+        menuItems={menuItems}
+        routes={routes}
+        active={"Trang chủ"}
+      />
 
-            {/* Các nút điều hướng */}
-            <Button
-              color="inherit"
-              sx={{ marginLeft: '60px', fontSize: '20px', marginRight: '30px' }} // Tăng kích thước font và khoảng cách
-              onClick={() => handleNavigation('/student-dashboard')}
-            >
-              Trang chủ
-            </Button>
-            <Button
-              color="inherit"
-              sx={{ fontSize: '20px', marginRight: '30px' }} // Tăng kích thước font và khoảng cách
-              onClick={() => handleNavigation('/print')}
-            >
-              In tài liệu
-            </Button>
-            <Button
-              color="inherit"
-              sx={{ fontSize: '20px', marginRight: '30px' }} // Tăng kích thước font và khoảng cách
-              onClick={() => handleNavigation('/printhistory')}
-            >
-              Lịch sử in
-            </Button>
-            <Button
-              color="inherit"
-              sx={{ fontSize: '20px', marginRight: '30px' }} // Tăng kích thước font và khoảng cách
-              onClick={() => handleNavigation('/payment')}
-            >
-              Mua trang in
-            </Button>
-          </Box>
-
-          {/* Thanh bên phải: Tên người dùng và nút đăng xuất */}
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="body1" sx={{ marginRight: '15px', color: 'white', fontSize: '16px' }}>
-              {userName}
-            </Typography>
-            <Avatar src={userAvatar} sx={{ marginRight: '15px' }} />
-            <Button color="inherit" sx={{ fontSize: '16px' }} onClick={handleLogout}>
-              Đăng xuất
-            </Button>
-          </Box>
-        </Toolbar>
-      </AppBar>
 
       {/* Nội dung trang - Chào mừng */}
       <Box
