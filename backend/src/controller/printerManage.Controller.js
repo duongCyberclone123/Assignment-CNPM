@@ -93,7 +93,6 @@ class PrinterController {
     async ViewHistoryLog(req, res){
         try{
             const log = await PrinterService.listAllPrintingLog(req.body);
-            console.log(log)
             return res.status(200).json({
                 status: 200,
                 msg: "View Log",
