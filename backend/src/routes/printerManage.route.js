@@ -5,9 +5,9 @@ const router = express.Router();
 
 // Route thêm máy in
 
-router.get('/:pid?', PrinterController.getPrinter);
+router.get('/', PrinterController.getPrinter);
 router.post('/add', PrinterController.addPrinter);
-router.put('/update/:pid', PrinterController.updatePrinter);
-router.delete('/:pid?', PrinterController.deletePrinter);
+router.put('/update', PrinterController.updatePrinter);
+router.delete('/', PrinterController.deletePrinter);
 router.get('/viewLog', PrinterController.ViewHistoryLog)
 module.exports = router;

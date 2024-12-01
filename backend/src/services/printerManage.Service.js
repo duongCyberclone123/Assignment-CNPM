@@ -45,11 +45,11 @@ class PrinterService {
     
     static createPrinter(data) {
         return new Promise((resolve, reject) => {
-            const { Pmodel, Pstatus, Pfacility, Pbuilding, Proom, Pname, Plast_maintenance, Pprovide_coloring, fileAccepted, EID , page_remain } = data;
+            const { Pmodel, Pstatus, Pfacility, Pbuilding, Proom, Pname, Plast_maintenance, Pprovide_coloring, EID } = data;
     
             // Kiểm tra đầu vào
-            if (!Pmodel || !Pfacility || !Pbuilding || !Proom|| !Pname || !fileAccepted || !page_remain) {
-                reject({ status: 400, message: 'Pmodel, Pfacility, Pbuilding, Proom, Pname, fileAccepted, and page_remain are required' });
+            if (!Pmodel || !Pfacility || !Pbuilding || !Proom|| !Pname ) {
+                reject({ status: 400, message: 'Pmodel, Pfacility, Pbuilding, Proom and Pname are required' });
                 return;
             }
     
@@ -68,10 +68,10 @@ class PrinterService {
 
                 // Câu lệnh SQL chèn máy in
                 const query = `
-                    INSERT INTO PRINTER (Pmodel, Pstatus, Pfacility, Pbuilding, Proom, Pname, Plast_maintenance, Pprovide_coloring, fileAccepted, EID, page_remain)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                    INSERT INTO PRINTER (Pmodel, Pstatus, Pfacility, Pbuilding, Proom, Pname, Plast_maintenance, Pprovide_coloring, EID)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
                 `;
-                const params = [Pmodel, Pstatus || 'Active', Pfacility, Pbuilding, Proom, Pname, Plast_maintenance || NULL, Pprovide_coloring || false, fileAccepted, EID , page_remain];
+                const params = [Pmodel, Pstatus || 'Active', Pfacility, Pbuilding, Proom, Pname, Plast_maintenance || NULL, Pprovide_coloring || false, EID];
         
                 // Thực thi câu truy vấn
                 client.execute(query, params, (err, result) => {
@@ -87,8 +87,8 @@ class PrinterService {
 
     static updatePrinter(pid, data) {
         return new Promise((resolve, reject) => {
-            const { Pmodel, Pstatus, Pfacility, Pbuilding, Proom, Pname, Plast_maintenance, Pprovide_coloring, fileAccepted, EID , page_remain } = data;
-    
+            const { Pmodel, Pstatus, Pfacility, Pbuilding, Proom, Pname, Plast_maintenance, Pprovide_coloring, EID } = data;
+
             // Kiểm tra máy in có tồn tại không
             const checkQuery = 'SELECT * FROM PRINTER WHERE PID = ?';
             client.execute(checkQuery, [pid], (err, existingPrinter) => {
@@ -109,30 +109,30 @@ class PrinterService {
                         return;
                     }
     
-                    if (checkResult.length > 0) {
-                        // Nếu Pname đã tồn tại
-                        reject({ status: 400, message: `Printer with name "${Pname}" already exists` });
-                        return;
+                    if (checkResult.length) {
+                        const existingPrinterPname = checkResult[0];
+                        if (Number(existingPrinterPname.PID) !== Number(pid, 10)) {
+                            reject({ status: 400, message: `Printer with name "${Pname}" already exists with a different ID` });
+                            return;
+                        }
                     }
 
                     // Cập nhật thông tin máy in
                     const updateQuery = `
                         UPDATE PRINTER
-                        SET Pmodel = ?, Pstatus  = ?, Pfacility  = ?, Pbuilding  = ?, Proom  = ?, Pname  = ?, Plast_maintenance  = ?, Pprovide_coloring  = ?, fileAccepted  = ?, EID  = ?, page_remain  = ?
+                        SET Pmodel = ?, Pstatus  = ?, Pfacility  = ?, Pbuilding  = ?, Proom  = ?, Pname  = ?, Plast_maintenance  = ?, Pprovide_coloring  = ?, EID  = ?
                         WHERE PID = ?;
                     `;
                     const params = [
                         Pmodel || existingPrinter[0].Pmodel,
                         Pstatus || existingPrinter[0].Pstatus,
-                        Pname || existingPrinter[0].Pname,
                         Pfacility || existingPrinter[0].Pfacility,
                         Pbuilding || existingPrinter[0].Pbuilding,
                         Proom || existingPrinter[0].Proom,
+                        Pname || existingPrinter[0].Pname,
                         Plast_maintenance || existingPrinter[0].Plast_maintenance,
                         Pprovide_coloring || existingPrinter[0].Pprovide_coloring,
-                        fileAccepted || existingPrinter[0].fileAccepted,
                         EID || existingPrinter[0].EID,
-                        page_remain || existingPrinter[0].page_remain,
                         pid
                     ];
         

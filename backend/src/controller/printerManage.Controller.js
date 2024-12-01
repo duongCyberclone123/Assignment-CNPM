@@ -3,7 +3,7 @@ const PrinterService = require('../services/printerManage.Service');
 class PrinterController {
     async getPrinter(req, res) {
         try {
-            const pid = req.params.pid ? parseInt(req.params.pid, 10) : null;
+            const pid = req.query.pid;
 
             if (pid && isNaN(pid)) {
                 return res.status(400).json({ status: 400, msg: 'Invalid PID' });
@@ -47,9 +47,9 @@ class PrinterController {
 
     async updatePrinter(req, res) {
         try {
-            const pid = req.params.pid; // Lấy PID từ URL
+            const pid = req.query.pid; // Lấy PID
             const printerData = req.body; // Dữ liệu sửa từ request body
-
+            
             // Gọi service để cập nhật thông tin máy in
             const result = await PrinterService.updatePrinter(pid, printerData);
 
@@ -69,8 +69,8 @@ class PrinterController {
     }
 
     async deletePrinter(req, res) {
-        const { pid } = req.params;  // Lấy PID từ tham số URL
-    
+        const pid  = req.query.pid;  // Lấy PID từ tham số URL
+
         try {
             // Gọi phương thức xóa máy in từ service
             const result = await PrinterService.deletePrinter(pid);
