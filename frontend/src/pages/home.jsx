@@ -1,11 +1,8 @@
 import React from 'react';
-import { Button, Typography, Box, Container} from '@mui/material';
+import { Button, Typography, Box, Container, AppBar, Toolbar, IconButton } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 import { Link } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-
 const Home = () => {
-  const menuItems = ['Trang chủ', 'In tài liệu', 'Lịch sử in', 'Mua trang in'];
-  const routes = ['/home', '/print', '/history', '/purchase'];
   return (
     <>
       {/* Đặt lại margin và padding của html, body */}
@@ -20,16 +17,27 @@ const Home = () => {
           }
         `}
       </style>
-
       {/* Thanh điều hướng */}
-      <Navbar
-        title="STUDENT PORTAL"
-        menuItems={menuItems}
-        routes={routes}
-        active={"Trang chủ"}
-      />
-
-
+      <AppBar position="fixed" sx={{ backgroundColor: '#000', boxShadow: 'none' }}>
+        <Toolbar>
+          <IconButton color="inherit" edge="start" sx={{ mr: 0 }}>
+            <MenuIcon />
+          </IconButton>
+          {/* Logo */}
+          <img
+            src="https://hcmut.edu.vn/img/nhanDienThuongHieu/01_logobachkhoatoi.png"
+            alt="HCMUT Logo"
+            style={{ width: '100px', marginRight: '10px' }}
+          />
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            SPSS
+          </Typography>
+          {/* Các nút điều hướng */}
+          <Button color="inherit" sx={{ marginLeft: '20px' }}>Trang chủ</Button>
+          <Button color="inherit">Giới thiệu</Button>
+          <Button color="inherit">Liên hệ</Button>
+        </Toolbar>
+      </AppBar>
       {/* Nội dung trang */}
       <Box
         sx={{
@@ -60,7 +68,6 @@ const Home = () => {
           <Typography variant="h6" sx={{ marginBottom: '40px' }}>
             Hệ thống cung cấp dịch vụ in ấn thông minh, tiện lợi cho sinh viên và giảng viên tại trường ĐH Bách Khoa TP.HCM
           </Typography>
-
           {/* Điều hướng tới trang đăng nhập */}
           <Link to="/login" style={{ textDecoration: 'none' }}>
             <Button
@@ -80,5 +87,4 @@ const Home = () => {
     </>
   );
 };
-
 export default Home;

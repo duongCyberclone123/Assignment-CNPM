@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const navigate = useNavigate();
-  
+
   const [userName, setUserName] = useState('');
   const [userAvatar, setUserAvatar] = useState('');
 
@@ -15,8 +15,8 @@ const Navbar = () => {
     const userData = localStorage.getItem('userData');
     if (userData) {
       const parsedData = JSON.parse(userData);
-      setUserName(parsedData.username);  
-      setUserAvatar(parsedData.avatar || 'https://i.pravatar.cc/150?img=3'); 
+      setUserName(parsedData.username);
+      setUserAvatar(parsedData.avatar || 'https://i.pravatar.cc/150?img=3');
     }
   }, []);
 
@@ -39,18 +39,24 @@ const Navbar = () => {
     <AppBar position="fixed" sx={{ backgroundColor: '#000', boxShadow: 'none' }}>
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          {/* Menu Icon */}
           <IconButton color="inherit" edge="start" sx={{ mr: 0 }}>
             <MenuIcon />
           </IconButton>
+
+          {/* Logo */}
           <img
             src="https://hcmut.edu.vn/img/nhanDienThuongHieu/01_logobachkhoatoi.png"
             alt="HCMUT Logo"
             style={{ width: '100px', marginRight: '20px' }}
           />
+          
+          {/* SPSS Title */}
           <Typography variant="h3" sx={{ flexGrow: 1, fontSize: '30px' }}>
             SPSS
           </Typography>
 
+          {/* Navigation Buttons */}
           <Button color="inherit" sx={{ marginLeft: '60px', fontSize: '20px', marginRight: '30px' }} onClick={() => handleNavigation('/spsodashboard')}>
             Trang chủ
           </Button>
@@ -65,6 +71,7 @@ const Navbar = () => {
           </Button>
         </Box>
 
+        {/* User Info and Logout */}
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Typography variant="body1" sx={{ marginRight: '15px', color: 'white', fontSize: '16px' }}>
             {userName || 'Người dùng'}

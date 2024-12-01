@@ -1,40 +1,45 @@
-import React, { useState } from "react";
-import {
-  AppBar,
-  Toolbar,
-  IconButton,
-  Typography,
-  Button,
-  Avatar,
-  Drawer,
-  List,
-  ListItem,
-  ListItemText,
-} from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { Button, Typography, Box, AppBar, Toolbar, IconButton, Avatar } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import { useNavigate } from 'react-router-dom';
 
-const Navbar = ({ title, menuItems, routes, active }) => {
-  const [mobileOpen, setMobileOpen] = useState(false); // Trạng thái cho menu thu gọn
-  const userName = "Nguyễn Văn A";
-  const userAvatar = "https://i.pravatar.cc/150?img=3"; // Avatar giả
+const Navbar = () => {
+  const navigate = useNavigate();
 
-  // Toggle menu khi ở chế độ thu gọn
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+  const [userName, setUserName] = useState('');
+  const [userAvatar, setUserAvatar] = useState('');
+
+  // Hàm lấy thông tin người dùng từ localStorage
+  useEffect(() => {
+    const userData = localStorage.getItem('userData');
+    if (userData) {
+      const parsedData = JSON.parse(userData);
+      setUserName(parsedData.username);
+      setUserAvatar(parsedData.avatar || 'https://i.pravatar.cc/150?img=3');
+    }
+  }, []);
+
+  // Hàm điều hướng cho các mục trong thanh điều hướng
+  const handleNavigation = (path) => {
+    navigate(path);
+  };
+
+  // Hàm đăng xuất
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Xóa token
+    localStorage.removeItem('userData'); // Xóa thông tin người dùng
+
+    console.log("Đăng xuất thành công!");
+
+    navigate('/'); // Điều hướng về trang chủ hoặc trang đăng nhập
   };
 
   return (
-    <>
-      <AppBar position="fixed" sx={{ backgroundColor: "#000", boxShadow: "none" }}>
-        <Toolbar>
+    <AppBar position="fixed" sx={{ backgroundColor: '#000', boxShadow: 'none' }}>
+      <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
           {/* Menu Icon */}
-          <IconButton
-            color="inherit"
-            edge="start"
-            sx={{ display: { xs: "block", xl: "none" }, mr: "5px" }}
-            onClick={handleDrawerToggle}
-          >
+          <IconButton color="inherit" edge="start" sx={{ mr: 0 }}>
             <MenuIcon />
           </IconButton>
 
@@ -42,105 +47,41 @@ const Navbar = ({ title, menuItems, routes, active }) => {
           <img
             src="https://hcmut.edu.vn/img/nhanDienThuongHieu/01_logobachkhoatoi.png"
             alt="HCMUT Logo"
-            style={{ width: "100px", marginRight: "10px" }}
+            style={{ width: '100px', marginRight: '20px' }}
           />
-          <Typography variant="h6" sx={{ flex: 1 }}>
-            {title}
+          
+          {/* SPSS Title */}
+          <Typography variant="h3" sx={{ flexGrow: 1, fontSize: '30px' }}>
+            SPSS
           </Typography>
 
-          {/* Menu Buttons */}
-          {menuItems.map((item, index) => (
-            <Button
-              key={index}
-              component={Link}
-              to={routes[index]}
-              color="inherit"
-              sx={{
-                display: { xs: "none", xl: "inline-flex" }, // Chỉ hiển thị trên màn hình lớn
-                margin: "0 15px",
-                padding: "10px 20px",
-                color: active === item ? "#000000" : "#ffffff",
-                fontWeight: active === item ? "bold" : "normal",
-                backgroundColor: active === item ? "#ffffff" : "transparent",
-                letterSpacing: "1.5px",
-              }}
-            >
-              {item}
-            </Button>
-          ))}
+          {/* Navigation Buttons */}
+          <Button color="inherit" sx={{ marginLeft: '60px', fontSize: '20px', marginRight: '30px' }} onClick={() => handleNavigation('/student-dashboard')}>
+            Trang chủ
+          </Button>
+          <Button color="inherit" sx={{ fontSize: '20px', marginRight: '30px' }} onClick={() => handleNavigation('/print')}>
+            In tài liệu
+          </Button>
+          <Button color="inherit" sx={{ fontSize: '20px', marginRight: '30px' }} onClick={() => handleNavigation('/history')}>
+            Lịch sử in
+          </Button>
+          <Button color="inherit" sx={{ fontSize: '20px', marginRight: '30px' }} onClick={() => handleNavigation('/purchase')}>
+            Thanh toán
+          </Button>
+        </Box>
 
-          {/* User Info */}
-          <Typography
-            variant="body1"
-            sx={{
-              marginRight: "15px",
-              color: "white",
-              fontSize: "16px",
-              display:  "inline-flex" , // Chỉ hiển thị trên màn hình lớn
-            }}
-          >
-            {userName}
+        {/* User Info and Logout */}
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Typography variant="body1" sx={{ marginRight: '15px', color: 'white', fontSize: '16px' }}>
+            {userName || 'Người dùng'}
           </Typography>
-          <Avatar
-            src={userAvatar}
-            sx={{
-              marginRight: "15px",
-              display: "inline-flex" , // Chỉ hiển thị trên màn hình lớn
-            }}
-          />
-
-          {/* Logout Button */}
-          <Button
-            color="inherit"
-            sx={{
-              margin: "0 15px",
-              padding: "10px 20px",
-              backgroundColor: "#1E90FF",
-              color: "#ffffff",
-              ml: "auto",
-              letterSpacing: "1.5px",
-              display: "inline-flex" , // Chỉ hiển thị trên màn hình lớn
-            }}
-          >
+          <Avatar src={userAvatar} sx={{ marginRight: '15px' }} />
+          <Button color="inherit" sx={{ fontSize: '16px' }} onClick={handleLogout}>
             Đăng xuất
           </Button>
-        </Toolbar>
-      </AppBar>
-
-      {/* Drawer for Mobile Menu */}
-      <Drawer
-        anchor="left"
-        open={mobileOpen}
-        onClose={handleDrawerToggle}
-        sx={{
-          display: { xs: "block", xl: "none" }, // Chỉ hiển thị trên màn hình nhỏ
-          "& .MuiDrawer-paper": { width: 200, backgroundColor: "#000", color: "#fff" },
-        }}
-      >
-        <List sx ={{padding:"90px 0 0 0"}}>
-          {menuItems.map((item, index) => (
-            <ListItem
-              button
-              key={index}
-              component={Link}
-              to={routes[index]}
-              onClick={handleDrawerToggle}
-            >
-              <ListItemText
-                primary={item}
-                sx={{
-                  color: active === item ? "#000000" : "#fff",
-                  fontWeight: active === item ? "bold" : "normal",
-                  backgroundColor: active === item ? "#ffffff" : "transparent",
-                  padding: "10px 20px",
-                  borderRadius: "10px"
-                }}
-              />
-            </ListItem>
-          ))}
-        </List>
-      </Drawer>
-    </>
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 };
 

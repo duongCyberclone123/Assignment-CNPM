@@ -3,8 +3,6 @@ const bodyParser = require('body-parser');
 const route = require('./routes/index');
 const cors = require('cors');
 const path = require('path');
-const favicon = require('serve-favicon');
-const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const port = 8000;
 
@@ -16,7 +14,6 @@ app.set('view engine', 'jade');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(cookieParser());
