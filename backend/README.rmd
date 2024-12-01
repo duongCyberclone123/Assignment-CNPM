@@ -1,0 +1,4 @@
+-> Nếu mn pull code xuống mà bị conflict báo ko chạy được thì chạy terminal cài thêm mấy cái này nha
+npm install jquery
+npm install moment
+npm install request
