@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Typography, Box, Container, AppBar, Toolbar, IconButton, Avatar } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
+import React from 'react';
+import { Typography, Box, Container} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
@@ -34,6 +34,9 @@ const StudentDashboard = () => {
     navigate('/'); // Điều hướng về trang chủ hoặc trang đăng nhập
   };
 
+  const menuItems = ['Trang chủ', 'In tài liệu', 'Lịch sử in', 'Mua trang in'];
+  const routes = ['/home', '/print', '/history', '/purchase'];
+
   return (
     <>
       <style>
@@ -48,62 +51,14 @@ const StudentDashboard = () => {
         `}
       </style>
 
-      <AppBar position="fixed" sx={{ backgroundColor: '#000', boxShadow: 'none' }}>
-        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton color="inherit" edge="start" sx={{ mr: 0 }}>
-              <MenuIcon />
-            </IconButton>
-            <img
-              src="https://hcmut.edu.vn/img/nhanDienThuongHieu/01_logobachkhoatoi.png"
-              alt="HCMUT Logo"
-              style={{ width: '100px', marginRight: '20px' }}
-            />
-            <Typography variant="h3" sx={{ flexGrow: 1, fontSize: '30px' }}>
-              SPSS
-            </Typography>
+      {/* Thanh điều hướng */}
+      <Navbar
+        title="STUDENT PORTAL"
+        menuItems={menuItems}
+        routes={routes}
+        active={"Trang chủ"}
+      />
 
-            <Button
-              color="inherit"
-              sx={{ marginLeft: '60px', fontSize: '20px', marginRight: '30px' }}
-              onClick={() => handleNavigation('/spsodashboard')}
-            >
-              Trang chủ
-            </Button>
-            <Button
-              color="inherit"
-              sx={{ fontSize: '20px', marginRight: '30px' }}
-              onClick={() => handleNavigation('/print')}
-            >
-              In tài liệu
-            </Button>
-            <Button
-              color="inherit"
-              sx={{ fontSize: '20px', marginRight: '30px' }}
-              onClick={() => handleNavigation('/printhistory')}
-            >
-              Lịch sử in
-            </Button>
-            <Button
-              color="inherit"
-              sx={{ fontSize: '20px', marginRight: '30px' }}
-              onClick={() => handleNavigation('/payment')}
-            >
-              Mua trang in
-            </Button>
-          </Box>
-
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="body1" sx={{ marginRight: '15px', color: 'white', fontSize: '16px' }}>
-              {userName || 'Người dùng'}
-            </Typography>
-            <Avatar src={userAvatar} sx={{ marginRight: '15px' }} />
-            <Button color="inherit" sx={{ fontSize: '16px' }} onClick={handleLogout}>
-              Đăng xuất
-            </Button>
-          </Box>
-        </Toolbar>
-      </AppBar>
 
       <Box
         sx={{

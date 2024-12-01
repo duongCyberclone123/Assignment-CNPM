@@ -17,7 +17,7 @@ const Login = () => {
       });
 
       // Kiểm tra phản hồi từ backend
-      if (response.data.status === 200) {
+      if (response.request.status === 200) {
         const { token, loadedUser } = response.data.data;  // Lấy token và loadedUser từ response
 
         // Lưu token vào localStorage để sử dụng cho các yêu cầu API sau
@@ -41,7 +41,7 @@ const Login = () => {
       }
     } catch (error) {
       console.error('Lỗi khi đăng nhập:', error);
-      alert('Đã xảy ra lỗi. Vui lòng thử lại!');
+      alert(err);
     }
   };
 
