@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { Button } from "@mui/material";
+import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import { Button, Dialog, DialogTitle, Box, LinearProgress, Typography } from "@mui/material";
 
 import Navbar from '../../components/Navbar';
 import Calendar from '../../components/Calendar';
 import FileUpload from '../../components/Fileupload';
 import PrinterList from '../../components/Printerlist';
-import axios from 'axios';
+import checked from "../../assets/checked.png";
 
 const Print = () => {
     const menuItems = ['Trang chủ', 'In tài liệu', 'Lịch sử in', 'Mua trang in'];
@@ -21,10 +22,18 @@ const Print = () => {
     const [isHorizon, setIsHorizon] = useState(true);
     const [numberOfCopies, setNumberOfCopies] = useState(1);
     const [numOfPages, setNumOfPages] = useState(0);
-    const [dID, setDID] = useState(-1);
     const [docSize, setDocSize] = useState(0);
+    let dID = -1;
     const [docName, setDocName] = useState("");
     const studentID = localStorage.getItem("ID");
+
+    const [loaddone, setLoaddone] = useState(false);
+    const [successModalOpen, setSuccessModalOpen] = useState(false);
+    const handleCloseModal = () => {
+        setSuccessModalOpen(false);
+    }
+
+
     const handleFileConfigure = (id, value) => {
         switch (id) {
             case 1:
@@ -65,7 +74,6 @@ const Print = () => {
                 setSeFilePage(true);
                 break
         }
-        console.log({ pageSize, isDoubleside, isColor, isHorizon, numberOfCopies, numOfPages, dID, docName, docSize, studentID, pID });
     }
     const handlePrinterConfigure = (id, value) => {
         switch (id) {
@@ -76,10 +84,7 @@ const Print = () => {
                 setSePrinter(true);
                 break;
         }
-
-
     }
-
     const uploadFile = async () => {
         try {
             const response = await axios.post("http://localhost:8000/api/printing/uploadFile", {
@@ -90,7 +95,9 @@ const Print = () => {
             },
                 { params: { uid: studentID }, }
             );
-            setDID(parseInt(response.data.data.did));
+            console.log(response.data.data.did);
+            dID = response.data.data.did;
+            console.log(dID);
         } catch (error) {
             console.error("Error while upload document", error.message);
         }
@@ -108,13 +115,33 @@ const Print = () => {
                     tcopies: numberOfCopies,
                     pid: pID,
                     did: dID,
-                    sid: parseInt( studentID),
+                    sid: parseInt(studentID),
                 }
             );
         } catch (error) {
             console.error("Error while upload document", error.message);
         }
     }
+    // loading box
+    const [progress, setProgress] = useState(0); // Trạng thái cho tiến trình
+    useEffect(() => {
+        if (progress === 100) {
+            setLoaddone(true); // Đánh dấu là tải xong
+        }
+    }, [progress])
+
+    const startLoad = () => {
+        setProgress(0);
+        setLoaddone(false);
+        const timer = setInterval(() => {
+            setProgress((prevProgress) =>
+                prevProgress < 100 ? prevProgress + 1 : 100
+            );
+        }, 50); // Cập nhật mỗi 50ms
+        return () => {
+            clearInterval(timer); // Xóa timer khi component bị unmount
+        };
+    };
 
     return (<>
         <style>
@@ -150,19 +177,22 @@ const Print = () => {
                         <Button
 
                             variant="contained"
-                            component="span"
+                            // component="span"
                             sx={{
                                 height: "100%",
+                                backgroundColor: "green"
                             }}
                             disabled={!(seFile && sePrinter && seFilePage)}
                             onClick={async () => {
                                 await uploadFile();
-                                makeTransition();
+                                await makeTransition();
+                                setSuccessModalOpen(true);
+                                startLoad();
                             }}
                         >
                             PRINT
                         </Button>
-                        
+
                     </div>
                 </div>
                 <div style={{ marginLeft: '20px', width: "50%", display: 'flex', justifyContent: 'center' }}>
@@ -171,7 +201,94 @@ const Print = () => {
             </div>
 
         </div>
-    </>);
+
+        <Dialog open={successModalOpen} onClose={handleCloseModal}>
+            {!loaddone && (
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",  // Căn giữa các phần tử
+                        padding: "20px",
+                        width: "650px",
+                        height: "400px",
+                    }}
+                >
+                    {/* Thanh tiến trình */}
+                    <LinearProgress
+                        variant="determinate"
+                        value={progress}
+                        sx={{
+                            width: "70%",  // Đảm bảo thanh tiến trình chiếm 80% chiều rộng của box
+                            height: "10px",  // Chiều cao của thanh tiến trình
+                            borderRadius: "5px",  // Bo góc cho thanh tiến trình
+                            backgroundColor: "#ddd",  // Màu nền của thanh tiến trình
+                            "& .MuiLinearProgress-bar": {
+                                backgroundColor: "#1E90FF",  // Màu sắc của thanh tiến trình
+                            },
+                        }}
+                    />
+                    {/* Hiển thị phần trăm */}
+                    <Typography
+                        variant="body1"
+                        sx={{
+                            marginTop: "10px",
+                            fontWeight: "bold",
+                        }}
+                    >
+                        Loading... {progress}%
+                    </Typography>
+                </Box>
+            )}
+
+            {loaddone && (
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",  // Căn giữa các phần tử
+                        padding: "20px",
+                    }}
+                >
+                    <Box
+                        component="img"
+                        src={checked}
+                        alt="Success"
+                        sx={{
+                            maxHeight: "80px",
+                            maxWidth: "80px",  // Giới hạn kích thước của hình ảnh
+                            objectFit: "contain",  // Giữ nguyên tỷ lệ ảnh
+                        }}
+                    />
+                    <DialogTitle
+                        sx={{
+                            textAlign: "center",
+                            fontSize: "30px",
+                            padding: "10px 0 0 0",
+                        }}
+                    >
+                        In thành công
+                    </DialogTitle>
+                    <DialogTitle
+                        sx={{
+                            textAlign: "center",
+                            fontSize: "14px",
+                            padding: "10px 0",
+                            maxWidth: "100%",
+                            wordWrap: "break-word",
+                            whiteSpace: "normal"
+                        }}
+                    >
+                        Tài liệu của bạn sẽ được in. Nếu có sự cố gì hãy liên hệ với chúng tôi để có thể được phản hồi và giải quyết.
+                    </DialogTitle>
+                </Box>
+            )}
+        </Dialog>
+
+    </>
+    );
 }
 
 export default Print;

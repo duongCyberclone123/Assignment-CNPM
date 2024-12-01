@@ -1,16 +1,9 @@
 import React, { useEffect, useState } from "react";
-import {
-    Box,
-    Button,
-    Typography,
-    Modal,
-    Card,
-    CardContent,
-    Grid,
-} from "@mui/material";
+import { Box, Button, Typography, Modal, Card, CardContent, Grid, TextField, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import axios from 'axios';
 
 import PR from "../assets/printer.png"; // Path to the printer image
+import printerView from "../assets/printerView.png"; // Path to the printer image
 
 const PrinterList = ({ onChangeValue }) => {
     // thong tin tra ve tu api
@@ -21,13 +14,16 @@ const PrinterList = ({ onChangeValue }) => {
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
+    const handleNext = () => {
+        setOpen(false);
+
+    };
 
     const selectPrinter = (printer) => {
         setSelectedPrinter(printer);
-        onChangeValue(1,printer.PID);
+        onChangeValue(1, printer.PID);
         onChangeValue(2, null);
     };
-
     useEffect(() => {
         const fetchPrinters = async () => {
             try {
@@ -54,7 +50,23 @@ const PrinterList = ({ onChangeValue }) => {
                 alignItems: "center",
             }}
         >
-            <Button variant="contained" color="primary" onClick={handleOpen}>
+            <Button
+                variant="contained"
+                color="primary"
+                onClick={handleOpen}
+                sx={{
+                    //width: "100%",
+                    height: "100%",
+                    backgroundColor: "white",
+                    display: "flex",
+                    flexDirection: "column",
+                    color: "black",
+                    border: "brown",
+                    borderRadius: "20px",
+                    marginBottom: "10px"
+                }}
+            >
+                <img src={printerView} style={{ maxWidth: "80px" }} />
                 Select Printer
             </Button>
 
@@ -76,6 +88,8 @@ const PrinterList = ({ onChangeValue }) => {
                         overflowX: "hidden",
                     }}
                 >
+
+
                     <Typography variant="h6" sx={{ marginBottom: 2 }}>
                         Select Printer
                     </Typography>
@@ -92,7 +106,7 @@ const PrinterList = ({ onChangeValue }) => {
                                         display: "flex",
                                         flexDirection: "row",
                                         alignItems: "center",
-                                        width:"100%"
+                                        width: "100%"
                                     }}
                                     onClick={() => selectPrinter(printer)}
                                 >
@@ -109,7 +123,7 @@ const PrinterList = ({ onChangeValue }) => {
                                         }}
                                     />
                                     {/* Printer Details */}
-                                    <CardContent sx={{ padding: 0, maxWidth: "calc(100% -96px)"}}>
+                                    <CardContent sx={{ padding: 0, maxWidth: "calc(100% -96px)" }}>
                                         <Typography
                                             variant="subtitle1"
                                             fontWeight="bold"
@@ -149,13 +163,11 @@ const PrinterList = ({ onChangeValue }) => {
                         <Button variant="outlined" color="error" onClick={handleClose} sx={{ marginRight: 2 }}>
                             Exit
                         </Button>
-                        {/* <Button
-                            variant="contained"
-                            color="success"
-                            disabled={!selectedPrinter}
-                        >
-                            Select
-                        </Button> */}
+                        {selectedPrinter &&
+                            <Button variant="outlined" color="success" onClick={handleClose} sx={{ marginRight: 2 }}>
+                                Done
+                            </Button>
+                        }
                     </Box>
                 </Box>
             </Modal>
