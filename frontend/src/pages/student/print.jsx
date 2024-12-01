@@ -1,75 +1,96 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@mui/material";
 
 import Navbar from '../../components/Navbar';
 import Calendar from '../../components/Calendar';
 import FileUpload from '../../components/Fileupload';
 import PrinterList from '../../components/Printerlist';
-import { param } from '../../../../backend/src/routes/printingProcess';
+import axios from 'axios';
 
 const Print = () => {
     const menuItems = ['Trang chủ', 'In tài liệu', 'Lịch sử in', 'Mua trang in'];
     const routes = ['/home', '/print', '/history', '/purchase'];
+    const [seFile, setSeFile] = useState(false);
+    const [seFilePage, setSeFilePage] = useState(false);
+    const [sePrinter, setSePrinter] = useState(false);
 
-    let pageSize = "A4";
-    let isDoubleside = true, isColor = true, isHorizon = true;
-    let numberOfCopies = 1;
-    let numOfPages = 0;
-    let dID = -1;
-    let docSize = 0;
-    let docName = "";
-    const studenID = localStorage.getItem("ID");
+    const [pID, setPID] = useState(-1);
+    const [pageSize, setPageSize] = useState("A4");
+    const [isDoubleside, setIsDoubleside] = useState(true);
+    const [isColor, setIsColor] = useState(true);
+    const [isHorizon, setIsHorizon] = useState(true);
+    const [numberOfCopies, setNumberOfCopies] = useState(1);
+    const [numOfPages, setNumOfPages] = useState(0);
+    const [dID, setDID] = useState(-1);
+    const [docSize, setDocSize] = useState(0);
+    const [docName, setDocName] = useState("");
+    const studentID = localStorage.getItem("ID");
     const handleFileConfigure = (id, value) => {
         switch (id) {
             case 1:
-                pageSize = value;
+                setPageSize(value);
                 break;
             case 2:
-                numOfPages = value;
+                setNumOfPages(value);
                 break
             case 3:
-                isDoubleside = (value == "two") ? true : false;
+                setIsDoubleside((value == "two") ? true : false);
                 break
             case 4:
-                isColor = (value == "Color") ? true : false;
+                setIsColor((value == "Color") ? true : false);
                 break
             case 5:
-                isHorizon = (value == "Horizontal") ? true : false;
+                setIsHorizon((value == "Horizontal") ? true : false);
                 break
             case 6:
-                numberOfCopies = value;
+                setNumberOfCopies(value);
                 break
             case 100:
-                pageSize = "A4";
-                isDoubleside = true; isColor = true; isHorizon = true;
-                numberOfCopies = 1;
+                setPageSize("A4");
+                setIsDoubleside(true);
+                setIsColor(true);
+                setIsHorizon(true);
+                setNumberOfCopies(1);
                 break;
             case 10:
-                docSize = value;
+                setDocSize(value + 1);
                 break
             case 11:
-                docName = value;
+                setDocName(value);
+                break
+            case 20:
+                setSeFile(true);
+                break
+            case 21:
+                setSeFilePage(true);
                 break
         }
-        console.log({ pageSize, isDoubleside, isColor, isHorizon, numberOfCopies, numOfPages });
+        console.log({ pageSize, isDoubleside, isColor, isHorizon, numberOfCopies, numOfPages, dID, docName, docSize, studentID, pID });
     }
-    let PID = -1;
-    const handlePrinterConfigure = (value) => {
-        PID = value;
+    const handlePrinterConfigure = (id, value) => {
+        switch (id) {
+            case 1:
+                setPID(value);
+                break;
+            case 2:
+                setSePrinter(true);
+                break;
+        }
+
+
     }
 
     const uploadFile = async () => {
         try {
-            const response = await axios.get("http://localhost:8000/api/printing/uploadFile", {
-                params: { uid: localStorage.getItem("ID") },
-                body: {
-                    dname: docName,
-                    dsize: docSize,
-                    dformat: "PDF",
-                    dpage_num: numOfPages
-                }
-            });
-            dID = response.did;
+            const response = await axios.post("http://localhost:8000/api/printing/uploadFile", {
+                dname: docName,
+                dsize: docSize,
+                dformat: "PDF",
+                dpage_num: numOfPages
+            },
+                { params: { uid: studentID }, }
+            );
+            setDID(parseInt(response.data.data.did));
         } catch (error) {
             console.error("Error while upload document", error.message);
         }
@@ -77,22 +98,19 @@ const Print = () => {
 
     const makeTransition = async () => {
         try {
-            const responseMakeTran = await axios.get("http://localhost:8000/api/printing/receivePrintingRequest", {
-                body: {
-                    isdoublesize: isDoubleside,
-                    ishorzon: isHorizon,
-                    iscoloring: isColor,
+            const responseMakeTran = await axios.post("http://localhost:8000/api/printing/receivePrintingRequest",
+                {
+                    isdoublesize: isDoubleside ? 1 : 0,
+                    ishorizon: isHorizon ? 1 : 0,
+                    iscoloring: isColor ? 1 : 0,
                     tpagesize: pageSize,
                     tpages_per_copy: numOfPages,
                     tcopies: numberOfCopies,
-                    pid: PID,
-                    did: '1',
-                    sid: studenID,
+                    pid: pID,
+                    did: dID,
+                    sid: parseInt( studentID),
                 }
-            });
-            const responseUpTran = await axios.get("http://localhost:8000/api/printing/Printing", {
-                params: { pID: PID }
-            });
+            );
         } catch (error) {
             console.error("Error while upload document", error.message);
         }
@@ -130,9 +148,13 @@ const Print = () => {
                         alignItems: "center",
                     }}>
                         <Button
+
                             variant="contained"
                             component="span"
-                            sx={{ height: "100%" }}
+                            sx={{
+                                height: "100%",
+                            }}
+                            disabled={!(seFile && sePrinter && seFilePage)}
                             onClick={async () => {
                                 await uploadFile();
                                 makeTransition();
@@ -140,6 +162,7 @@ const Print = () => {
                         >
                             PRINT
                         </Button>
+                        
                     </div>
                 </div>
                 <div style={{ marginLeft: '20px', width: "50%", display: 'flex', justifyContent: 'center' }}>

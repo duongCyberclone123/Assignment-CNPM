@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import { TextField, Button, MenuItem, Box, Typography, Dialog, DialogTitle, DialogActions } from "@mui/material";
 import checked from "../../assets/checked.png";
 import axios from "axios";
-
+import Navbar from "../../components/Navbar";
 const PrintPurchasePage = () => {
+    const menuItems = ['Trang chủ', 'In tài liệu', 'Lịch sử in', 'Mua trang in'];
+    const routes = ['/home', '/print', '/history', '/purchase'];
+
     const [paperCount, setPaperCount] = useState("");
     const [paymentMethod, setPaymentMethod] = useState("");
     const [paymentDetails, setPaymentDetails] = useState({});
@@ -74,8 +77,18 @@ const PrintPurchasePage = () => {
         setErrors({});
     };
 
-    return (
-        <Box sx={{ maxWidth: 600, mx: "auto", mt: 4, p: 2, border: "1px solid #ccc", borderRadius: 2 }}>
+    return (<>
+        <style>
+            {`html, body {margin: 0; padding: 0; width: 100%; overflow-x: hidden;}`}
+        </style>
+
+        <Navbar
+            title="STUDENT PORTAL"
+            menuItems={menuItems}
+            routes={routes}
+            active={"Mua trang in"}
+        />
+        <Box sx={{ maxWidth: 600, mx: "auto", mt: "90px", p: 2, border: "1px solid #ccc", borderRadius: 2 }}>
             <Typography variant="h5" gutterBottom>
                 Purchase Printing Sheets
             </Typography>
@@ -212,6 +225,7 @@ const PrintPurchasePage = () => {
                 </Box>
             </Dialog>
         </Box>
+    </>
     );
 };
 

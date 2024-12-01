@@ -31,7 +31,7 @@ const History = () => {
         const year = startDate.getUTCFullYear();
 
         // Trả về chuỗi định dạng theo yêu cầu
-        return `${startHour}:${startMinute}-${endHour}:${endMinute} ${day}-${month}-${year}`;
+        return `${(startHour === "00" && startMinute === "00") ? '__' : startHour}:${(startHour === "00" && startMinute === "00") ? '__' : startMinute}-${(endHour === "00" && endMinute === "00") ? '__' : endHour}:${(endHour === "00" && endMinute === "00") ? '__' : endMinute} ${day}-${month}-${year}`;
     }
 
 
@@ -43,7 +43,7 @@ const History = () => {
                 const response = await axios.get("http://localhost:8000/api/printing/viewHistoryLog", {
                     params: { sid: sID },
                 });
-
+                
                 if (response.status === 200) {
                     sethistoryData(response.data.data.data);
                     console.log(response.data.data.data);
@@ -57,7 +57,7 @@ const History = () => {
 
     const getBackgroundColor = (status) => {
         switch (status) {
-            case 'Pending':
+            case 'pending':
                 return '#dbe7ff'; // Light blue
             case 'Success':
                 return '#d8f3dc'; // Light green
@@ -168,7 +168,7 @@ const History = () => {
 
                                     {/* File Size */}
                                     <Typography variant="body2" sx={{ marginBottom: '8px' }}>
-                                        <strong>File size:</strong> {item.fileSize}
+                                        <strong>Pages size:</strong> {item.Tpage_size}
                                     </Typography>
 
                                     {/* Location */}

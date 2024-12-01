@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Typography, Box, Modal, Backdrop, Fade, TextField } from "@mui/material";
 
 const FileUpload = ({ onChangeValue }) => {
@@ -25,10 +25,10 @@ const FileUpload = ({ onChangeValue }) => {
           onChangeValue(2, parseInt(value));
           break;
         case "odd":
-          onChangeValue(2, parseInt(Math.ceil(value/2)));
+          onChangeValue(2, parseInt(Math.ceil(value / 2)));
           break;
         case "even":
-          onChangeValue(2, parseInt(Math.floor(value/2)));
+          onChangeValue(2, parseInt(Math.floor(value / 2)));
           break;
         case "custom":
           setPagesToPrint("all");
@@ -52,8 +52,10 @@ const FileUpload = ({ onChangeValue }) => {
           setFileContent(reader.result); // Đặt Data URL cho PDF
         };
         reader.readAsDataURL(file);
-        onChangeValue(10,parseInt((selectedFile?.size / 1024 / 1024).toFixed(2)));
-        onChangeValue(11,selectedFile.name);
+        onChangeValue(20, null);
+        onChangeValue(11, file.name); ``
+        onChangeValue(10, parseFloat((file.size / 1024 / 1024)));
+        setOpenPreview(true);
       } else {
         alert("Chỉ được chọn file PDF.");
         event.target.value = null; // Reset input nếu loại file không phải PDF
@@ -96,7 +98,10 @@ const FileUpload = ({ onChangeValue }) => {
           <Button
             variant="contained"
             component="span"
-            sx={{ width: "100%", height: "100%" }}
+            sx={{
+              //width: "100%",
+              height: "100%"
+            }}
           >
             Select File
           </Button>
@@ -107,7 +112,10 @@ const FileUpload = ({ onChangeValue }) => {
             variant="contained"
             color="primary"
             onClick={handlePreview}
-            sx={{ width: "100%", height: "100%" }}
+            sx={{
+              // width: "100%",
+              height: "100%"
+            }}
           >
             Preview & Configure print
           </Button>
@@ -120,7 +128,10 @@ const FileUpload = ({ onChangeValue }) => {
               setFileContent(null);
               onChangeValue(100, null);
             }}
-            sx={{ width: "100%", height: "100%" }}
+            sx={{
+              // width: "100%",
+              height: "100%"
+            }}
           >
             Delete File
           </Button>
@@ -215,7 +226,10 @@ const FileUpload = ({ onChangeValue }) => {
                   fullWidth
                   defaultValue={pageCount}
 
-                  onChange={(e) => handlePageCountChange(e.target.value)}
+                  onChange={(e) => {
+                    handlePageCountChange(e.target.value);
+                    onChangeValue(21, null);
+                  }}
                   error={!!error}
                   helperText={error || null}
                   label="Enter Number of Pages"

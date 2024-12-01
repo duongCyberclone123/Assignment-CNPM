@@ -24,7 +24,8 @@ const PrinterList = ({ onChangeValue }) => {
 
     const selectPrinter = (printer) => {
         setSelectedPrinter(printer);
-        onChangeValue(printer.PID);
+        onChangeValue(1,printer.PID);
+        onChangeValue(2, null);
     };
 
     useEffect(() => {
