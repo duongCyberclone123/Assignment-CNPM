@@ -1,53 +1,41 @@
-import React, { useState } from 'react'; 
+import React, { useState } from 'react';
 import { TextField, Button, Box, Container, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const Login = () => {
+const SignUp = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleSignUp = async () => {
+    if (password !== confirmPassword) {
+      setError("Mật khẩu và xác nhận mật khẩu không khớp.");
+      return;
+    }
+
     try {
-      // Gửi yêu cầu đăng nhập tới backend
-      const response = await axios.post('http://localhost:8000/api/user/login', {
+      // Gửi yêu cầu đăng ký tới backend
+      const response = await axios.post('http://localhost:8000/api/user/signUp', {
         email,
         password,
+        confirmPassword
       });
 
       // Kiểm tra phản hồi từ backend
       if (response.data.status === 200) {
-        const { token, loadedUser } = response.data.data;  // Lấy token và loadedUser từ response
-
-        // Lưu token vào localStorage để sử dụng cho các yêu cầu API sau
-        localStorage.setItem('token', token);
-
-        // Lưu thông tin người dùng vào localStorage
-        localStorage.setItem('userData', JSON.stringify(loadedUser));
-
-        // Kiểm tra ID và phân loại vai trò người dùng
-        if (loadedUser.ID >= 1 && loadedUser.ID <= 1999) { 
-          // Vai trò là spso
-          navigate('/spsodashboard');
-        } else if (loadedUser.ID >= 2000 && loadedUser.ID <= 5000) {
-          // Vai trò là student
-          navigate('/student-dashboard');
-        } else {
-          alert('Không xác định vai trò người dùng.');
-        }
+        alert('Đăng ký thành công!');
+        // Redirect to login page or another page
+        navigate('/login');
       } else {
-        alert('Đăng nhập thất bại!');
+        setError('Đăng ký thất bại, vui lòng thử lại.');
       }
     } catch (error) {
-      console.error('Lỗi khi đăng nhập:', error);
-      alert('Đã xảy ra lỗi. Vui lòng thử lại!');
+      console.error('Lỗi khi đăng ký:', error);
+      setError('Đã xảy ra lỗi, vui lòng thử lại!');
     }
-  };
-
-  const handleSignUp = () => {
-    // Navigate to the sign-up page
-    navigate('/sign-up');
   };
 
   return (
@@ -61,8 +49,11 @@ const Login = () => {
         />
         
         <Typography variant="h5" sx={{ marginBottom: 4, fontWeight: 'bold', color: '#3f51b5' }}>
-          Đăng nhập
+          Đăng ký
         </Typography>
+
+        {/* Display error message if any */}
+        {error && <Typography sx={{ color: 'red', marginBottom: 2 }}>{error}</Typography>}
         
         <TextField
           label="Email"
@@ -99,6 +90,24 @@ const Login = () => {
           }}
         />
         
+        <TextField
+          label="Xác nhận mật khẩu"
+          type="password"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: '10px',
+            },
+            '& .MuiInputLabel-root': {
+              fontWeight: 'bold',
+            },
+          }}
+        />
+
         <Button
           variant="contained"
           color="primary"
@@ -114,32 +123,26 @@ const Login = () => {
               boxShadow: '0px 10px 20px rgba(63, 81, 181, 0.3)',
             },
           }}
-          onClick={handleLogin}
+          onClick={handleSignUp}
         >
-          Đăng nhập
+          Đăng ký
         </Button>
-        
-        {/* Thêm nút Đăng ký */}
+
         <Button
-          variant="outlined"
+          variant="text"
           color="secondary"
           fullWidth
           sx={{
             marginTop: 2,
-            borderRadius: '20px',
-            padding: '10px',
             fontWeight: 'bold',
-            '&:hover': {
-              backgroundColor: '#f1f1f1',
-            },
           }}
-          onClick={handleSignUp}
+          onClick={() => navigate('/login')}
         >
-          Đăng ký
+          Đã có tài khoản? Đăng nhập
         </Button>
       </Box>
     </Container>
   );
 };
 
-export default Login;
+export default SignUp;
