@@ -91,6 +91,22 @@ class StudentService{
     // Printing Process
     async uploadFile(studentID, newFile){
         studentID = parseInt(studentID)
+        const curdid = await new Promise((resolve,reject)=>{
+            client.query(`
+                SELECT DID FROM DOCUMENT
+                ORDER BY DID DESC
+                LIMIT 1
+            `,(err,res)=>{
+                if(err) reject({
+                    status: 400,
+                    msg:"Fetch Fail",
+                    data: null
+                })
+                else resolve(res)
+            })
+        })
+
+        const did = curdid[0].DID + 1
         return new Promise((resolve,reject) => {
             const {dname, dsize, dformat, dpage_num} = newFile
             const date = new Date();
@@ -111,7 +127,7 @@ class StudentService{
                         resolve({
                             status: 200,
                             msg: "Upload File successfully!",
-                            data: newFile
+                            data: {did, newFile}
                         })
                     }
                 }
