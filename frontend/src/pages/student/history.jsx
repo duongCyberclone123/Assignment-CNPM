@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, Card, CardContent, Typography, Grid } from '@mui/material';
 import Navbar from '../../components/Navbar'
 
 import time from '../../assets/time.png';
 import location from '../../assets/location.png';
+import axios from 'axios';
 
 const History = () => {
     const menuItems = ['Trang chủ', 'In tài liệu', 'Lịch sử in', 'Mua trang in'];
@@ -64,6 +65,22 @@ const History = () => {
             status: 'Failed',
         },
     ];
+
+
+    useEffect(() => {
+        const run = async () => {
+            try {
+                const sID = localStorage.getItem("ID");
+                const response = await axios.get("http://localhost:8000/api/printing/viewHistoryLog", { studentID: sID });
+                if (response.status === 200) {
+                    console.log(response);
+                }
+            } catch (error) {
+                console.error("Error while fetching printers:", error.message);
+            }
+        }
+        run();
+    }), [];
 
     const getBackgroundColor = (status) => {
         switch (status) {

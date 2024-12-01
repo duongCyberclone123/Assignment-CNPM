@@ -1,12 +1,63 @@
 import React from 'react';
+import { Button } from "@mui/material";
 
 import Navbar from '../../components/Navbar';
 import Calendar from '../../components/Calendar';
 import FileUpload from '../../components/Fileupload';
+import PrinterList from '../../components/Printerlist';
+
 const Print = () => {
     const menuItems = ['Trang chủ', 'In tài liệu', 'Lịch sử in', 'Mua trang in'];
     const routes = ['/home', '/print', '/history', '/purchase'];
 
+    let pageSize = "A4";
+    let isDoubleside = true, isColor = true, isHorizon = true;
+    let numberOfCopies = 1;
+    let pages = [];
+    const handleFileConfigure = (id, value) => {
+        switch (id) {
+            case 1:
+                pageSize = value;
+                break;
+            case 2:
+                break
+            case 3:
+                isDoubleside = (value == "two") ? true : false;
+                break
+            case 4:
+                isColor = (value == "Color") ? true : false;
+                break
+            case 5:
+                isHorizon = (value == "Horizontal") ? true : false;
+                break
+            case 6:
+                numberOfCopies = value;
+                break
+            case 100:
+                pageSize = "A4";
+                isDoubleside = true; isColor = true; isHorizon = true;
+                numberOfCopies = 1;
+                break;
+        }
+    }
+    let PID = -1;
+    const handlePrinterConfigure = (value) => {
+        PID = value;
+    }
+
+    // const sentTransaction = async ()=>{
+    //     try {
+    //         const response = await axios.get("http://localhost:8000/api/printing/uploadFile", param{
+                
+    //         });
+    //         if (response.status === 200) {
+    //             console.log(response.data.data);
+    //             setPrinters(response.data.data);
+    //         }
+    //     } catch (error) {
+    //         console.error("Error while fetching printers:", error.message);
+    //     }
+    // };
 
     return (<>
         <style>
@@ -29,14 +80,31 @@ const Print = () => {
             flexDirection: 'column'
         }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'row' }}>
-                <div style={{marginLeft: '20px'}}>
+                <div style={{ flex: 1, height: '157px', display: 'flex', flexDirection: 'column', justifyItems: 'center' }}>
+                    <FileUpload onChangeValue={handleFileConfigure} />
+                    <PrinterList onChangeValue={handlePrinterConfigure} />
+                    <div style={{
+                        padding: "20px",
+                        textAlign: "center",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                    }}>
+                        <Button
+                            variant="contained"
+                            component="span"
+                            sx={{ height: "100%" }}
+                            onClick={{}}
+                        >
+                            PRINT
+                        </Button>
+                    </div>
+                </div>
+                <div style={{ marginLeft: '20px', width: "50%", display: 'flex', justifyContent: 'center' }}>
                     <Calendar scale={1.2} />
                 </div>
-
-                <div style={{ flex: 1, height: '157px'}}>
-                    <FileUpload />
-                </div>
             </div>
+
         </div>
     </>);
 }

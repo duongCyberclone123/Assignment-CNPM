@@ -1,10 +1,14 @@
 import React, { useState } from "react";
 import { Button, Typography, Box, Modal, Backdrop, Fade } from "@mui/material";
 
-const FileUpload = () => {
+const FileUpload = ({ onChangeValue }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileContent, setFileContent] = useState(null);
   const [openPreview, setOpenPreview] = useState(false);
+
+
+  // Thiết lập in
+  const [pagesToPrint, setPagesToPrint] = useState("all"); // Lựa chọn mặc định là "all"
 
   // Xử lý khi người dùng chọn file
   const handleFileChange = (event) => {
@@ -56,22 +60,40 @@ const FileUpload = () => {
         onChange={handleFileChange}
         accept=".pdf"
       />
-      <label htmlFor="file-input">
-        <Button variant="contained" component="span">
-          Select File
-        </Button>
-      </label>
+      {!selectedFile ? (
+        <label htmlFor="file-input">
+          <Button
+            variant="contained"
+            component="span"
+            sx={{ width: "100%", height: "100%" }}
+          >
+            Select File
+          </Button>
+        </label>
+      ) : (
+        <>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handlePreview}
+            sx={{ width: "100%", height: "100%" }}
+          >
+            Preview & Configure print
+          </Button>
 
-      {selectedFile && (
-        <Typography variant="body1" sx={{ margin: "10px 0" }}>
-          Selected File: {selectedFile.name}
-        </Typography>
-      )}
-
-      {fileContent && (
-        <Button variant="contained" color="primary" onClick={handlePreview}>
-          Preview
-        </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => {
+              setSelectedFile(null);
+              setFileContent(null);
+              onChangeValue(100, null);
+            }}
+            sx={{ width: "100%", height: "100%" }}
+          >
+            Delete File
+          </Button>
+        </>
       )}
 
       <Modal
@@ -91,13 +113,14 @@ const FileUpload = () => {
               left: "50%",
               transform: "translate(-50%, 0)",
               width: "80%",
-              height: "calc(100% - 70px)",
+              height: "80%",
               bgcolor: "background.paper",
               boxShadow: 24,
               padding: "20px",
               outline: "none",
               display: "flex",
               borderRadius: "8px",
+              overflow: "scroll"
             }}
           >
             {/* Bên trái: Preview PDF */}
@@ -125,15 +148,13 @@ const FileUpload = () => {
             <Box
               sx={{
                 width: "40%",
-                display: "flex",
                 flexDirection: "column",
-                justifyContent: "space-between",
               }}
             >
               {/* Thông tin file */}
               <Box
                 sx={{
-                  marginBottom: "20px",
+                  marginBottom: "10px",
                   padding: "10px",
                   border: "1px solid #ddd",
                   borderRadius: "8px",
@@ -149,9 +170,6 @@ const FileUpload = () => {
                 <Typography variant="body1">
                   <strong>Size:</strong> {(selectedFile?.size / 1024 / 1024).toFixed(2)} MB
                 </Typography>
-                <Typography variant="body1">
-                  <strong>Pages:</strong> {/* Add logic for page count if needed */}
-                </Typography>
               </Box>
 
               {/* Thiết lập in */}
@@ -166,51 +184,255 @@ const FileUpload = () => {
                 <Typography variant="h6" component="h3" sx={{ marginBottom: "10px" }}>
                   Print Settings
                 </Typography>
-                <Box sx={{ marginBottom: "10px" }}>
-                  <Typography variant="body2" sx={{ marginBottom: "5px" }}>
+
+                {/* Num of copies */}
+                <Box
+                  sx={{
+                    marginBottom: "10px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Typography variant="body2" sx={{ marginRight: "10px", flex: "1" }}>
+                    Number of copies:
+                  </Typography>
+                  <input
+                    type="number"
+                    placeholder="From"
+                    min={1}
+                    defaultValue={1}
+                    style={{
+                      flex: "1",
+                      padding: "10px",
+                      border: "1px solid #ccc",
+                      borderRadius: "8px",
+                      fontSize: "14px",
+                      outline: "none",
+                      backgroundColor: "#fff",
+                      transition: "border-color 0.3s ease",
+                      marginBottom: "10px",
+                    }}
+                    onChange={(e) => {
+                      onChangeValue(6, e.target.value);
+                    }}
+                    onFocus={(e) => (e.target.style.borderColor = "#1976d2")}
+                    onBlur={(e) => (e.target.style.borderColor = "#ccc")}
+                  />
+                </Box>
+                {/* Paper Size */}
+                <Box
+                  sx={{
+                    marginBottom: "10px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Typography variant="body2" sx={{ marginRight: "10px", flex: "1" }}>
                     Paper Size:
                   </Typography>
-                  <select>
+                  <select
+                    style={{
+                      flex: "1",
+                      padding: "10px",
+                      borderRadius: "8px",
+                      border: "1px solid #ccc",
+                      fontSize: "14px",
+                      backgroundColor: "#fff",
+                      outline: "none",
+                      transition: "border-color 0.3s ease",
+                    }}
+                    onFocus={(e) => (e.target.style.borderColor = "#1976d2")}
+                    onBlur={(e) => (e.target.style.borderColor = "#ccc")}
+                    onChange={(e) => {
+                      onChangeValue(1, e.target.value);
+                    }}
+                  >
                     <option value="A4">A4</option>
                     <option value="A3">A3</option>
                   </select>
                 </Box>
-                <Box sx={{ marginBottom: "10px" }}>
-                  <Typography variant="body2" sx={{ marginBottom: "5px" }}>
+
+                {/* Pages to Print */}
+                <Box
+                  sx={{
+                    marginBottom: "10px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Typography variant="body2" sx={{ marginRight: "10px", flex: "1" }}>
                     Pages to Print:
                   </Typography>
-                  <select>
+                  <select
+                    value={pagesToPrint}
+                    onChange={(e) => setPagesToPrint(e.target.value)}
+                    style={{
+                      flex: "1",
+                      padding: "10px",
+                      borderRadius: "8px",
+                      border: "1px solid #ccc",
+                      fontSize: "14px",
+                      backgroundColor: "#fff",
+                      outline: "none",
+                      transition: "border-color 0.3s ease",
+                    }}
+                    onFocus={(e) => (e.target.style.borderColor = "#1976d2")}
+                    onBlur={(e) => (e.target.style.borderColor = "#ccc")}
+                    con
+                  >
                     <option value="all">All</option>
                     <option value="odd">Odd Pages</option>
                     <option value="even">Even Pages</option>
                     <option value="custom">Custom Range</option>
                   </select>
-                  <Box sx={{ marginTop: "5px", display: "flex", gap: "5px" }}>
-                    <input type="number" placeholder="From" min={1} style={{ width: "50%" }} />
-                    <input type="number" placeholder="To" min={1} style={{ width: "50%" }} />
-                  </Box>
                 </Box>
-                <Box sx={{ marginBottom: "10px" }}>
-                  <Typography variant="body2" sx={{ marginBottom: "5px" }}>
+
+                {pagesToPrint === "custom" && (
+                  <Box sx={{ marginTop: "5px", display: "flex", gap: "10px" }}>
+                    <input
+                      type="number"
+                      placeholder="From"
+                      min={1}
+                      style={{
+                        flex: "1",
+                        padding: "10px",
+                        border: "1px solid #ccc",
+                        borderRadius: "8px",
+                        fontSize: "14px",
+                        outline: "none",
+                        backgroundColor: "#fff",
+                        transition: "border-color 0.3s ease",
+                        marginBottom: "10px",
+
+                      }}
+                      onFocus={(e) => (e.target.style.borderColor = "#1976d2")}
+                      onBlur={(e) => (e.target.style.borderColor = "#ccc")}
+                    />
+                    <input
+                      type="number"
+                      placeholder="To"
+                      min={1}
+                      style={{
+                        flex: "1",
+                        padding: "10px",
+                        border: "1px solid #ccc",
+                        borderRadius: "8px",
+                        fontSize: "14px",
+                        outline: "none",
+                        backgroundColor: "#fff",
+                        transition: "border-color 0.3s ease",
+                        marginBottom: "10px",
+                      }}
+                      onFocus={(e) => (e.target.style.borderColor = "#1976d2")}
+                      onBlur={(e) => (e.target.style.borderColor = "#ccc")}
+                    />
+                  </Box>
+                )}
+
+                {/* Printing Side */}
+                <Box
+                  sx={{
+                    marginBottom: "10px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Typography variant="body2" sx={{ marginRight: "10px", flex: "1" }}>
                     Printing Side:
                   </Typography>
-                  <select>
-                    <option value="one">Single-sided</option>
+                  <select
+                    style={{
+                      flex: "1",
+                      padding: "10px",
+                      borderRadius: "8px",
+                      border: "1px solid #ccc",
+                      fontSize: "14px",
+                      backgroundColor: "#fff",
+                      outline: "none",
+                      transition: "border-color 0.3s ease",
+                    }}
+                    onFocus={(e) => (e.target.style.borderColor = "#1976d2")}
+                    onBlur={(e) => (e.target.style.borderColor = "#ccc")}
+                    onChange={(e) => {
+                      onChangeValue(3, e.target.value);
+                    }}
+                  >
                     <option value="two">Double-sided</option>
+                    <option value="one">Single-sided</option>
                   </select>
                 </Box>
-                <Box>
-                  <Typography variant="body2" sx={{ marginBottom: "5px" }}>
+
+                {/* Print Type */}
+                <Box
+                  sx={{
+                    marginBottom: "10px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Typography variant="body2" sx={{ marginRight: "10px", flex: "1" }}>
                     Print Type:
                   </Typography>
-                  <select>
-                    <option value="simplex">1-sided</option>
-                    <option value="duplex">2-sided</option>
+                  <select
+                    style={{
+                      flex: "1",
+                      padding: "10px",
+                      borderRadius: "8px",
+                      border: "1px solid #ccc",
+                      fontSize: "14px",
+                      backgroundColor: "#fff",
+                      outline: "none",
+                      transition: "border-color 0.3s ease",
+                    }}
+                    onFocus={(e) => (e.target.style.borderColor = "#1976d2")}
+                    onBlur={(e) => (e.target.style.borderColor = "#ccc")}
+                    onChange={(e) => {
+                      onChangeValue(4, e.target.value);
+                    }}
+                  >
+                    <option value="Color">Color</option>
+                    <option value="Non Color">Non Color</option>
+                  </select>
+                </Box>
+                {/* Chieu in */}
+                <Box
+                  sx={{
+                    marginBottom: "10px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Typography variant="body2" sx={{ marginRight: "10px", flex: "1" }}>
+                    Orientation:
+                  </Typography>
+                  <select
+                    style={{
+                      flex: "1",
+                      padding: "10px",
+                      borderRadius: "8px",
+                      border: "1px solid #ccc",
+                      fontSize: "14px",
+                      backgroundColor: "#fff",
+                      outline: "none",
+                      transition: "border-color 0.3s ease",
+                    }}
+                    onFocus={(e) => (e.target.style.borderColor = "#1976d2")}
+                    onBlur={(e) => (e.target.style.borderColor = "#ccc")}
+                    onChange={(e) => {
+                      onChangeValue(5, e.target.value);
+                    }}
+                  >
+                    <option value="Horizontal">Horizontal</option>
+                    <option value="Vertical">Vertical</option>
                   </select>
                 </Box>
               </Box>
-
-              {/* Nút OK */}
               <Box sx={{ textAlign: "center", marginTop: "20px" }}>
                 <Button
                   variant="contained"
