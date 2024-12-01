@@ -91,19 +91,7 @@ class StudentService{
     // Printing Process
     async uploadFile(studentID, newFile){
         studentID = parseInt(studentID)
-        return new Promise(async(resolve,reject) => {
-            const nextID = await new Promise((resolve,reject)=>{
-                client.query(`
-                    SELECT DID FROM DOCUMENT
-                    ORDER BY DID DESC
-                    LIMIT 1
-                `,(err, res)=>{
-                    if (err) reject(err)
-                    else resolve(res)
-                })
-            })
-            console.log(nextID)
-            const did = nextID[0].DID + 1
+        return new Promise((resolve,reject) => {
             const {dname, dsize, dformat, dpage_num} = newFile
             const date = new Date();
             const dupload_time = date.toISOString().slice(0, 19).replace('T', ' ');
@@ -123,7 +111,7 @@ class StudentService{
                         resolve({
                             status: 200,
                             msg: "Upload File successfully!",
-                            data: {did, newFile}
+                            data: newFile
                         })
                     }
                 }

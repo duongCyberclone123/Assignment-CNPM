@@ -5,7 +5,7 @@ class UserService {
     async findByEmail(email) {
         return new Promise((resolve, reject) => {
             client.query(`
-                SELECT * FROM ACCOUNT
+                SELECT * FROM account
                 WHERE email = ?
             `, [email], (err, res) => {
                 if (err) {

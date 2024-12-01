@@ -9,8 +9,10 @@ let router = express.Router();
 let $ = require('jquery');
 const request = require('request');
 const moment = require('moment');
-
-
+const client = require('../../database/database');
+const { resolve } = require('path');
+const { rejects } = require('assert');
+const { v4: uuidv4 } = require('uuid');
 router.get('/', function(req, res, next){
     res.render('orderlist', { title: 'Danh sách đơn hàng' })
 });
@@ -50,7 +52,7 @@ router.post('/create_payment_url', function (req, res, next) {
     let secretKey = config.get('vnp_HashSecret');
     let vnpUrl = config.get('vnp_Url');
     let returnUrl = config.get('vnp_ReturnUrl');
-    let orderId = moment(date).format('DDHHmmss');
+    let orderId = uuidv4();
     let amount = req.body.amount;
     let bankCode = req.body.bankCode;
     
@@ -60,15 +62,24 @@ router.post('/create_payment_url', function (req, res, next) {
     // }
     let currCode = 'VND';
     let vnp_Params = {};
+    if(req.query.sid){
+        //vnp_Params['sid'] = req.query.sid
+    }
+    else return res.status(404).json({
+        status: 404,
+        msg: "Đăng nhập để thực hiện giao dịch",
+        data: null
+    })
     vnp_Params['vnp_Version'] = '2.1.0';
     vnp_Params['vnp_Command'] = 'pay';
     vnp_Params['vnp_TmnCode'] = tmnCode;
     vnp_Params['vnp_Locale'] = locale;
     vnp_Params['vnp_CurrCode'] = currCode;
     vnp_Params['vnp_TxnRef'] = orderId;
-    vnp_Params['vnp_OrderInfo'] = 'Thanh toan cho ma GD:' + orderId;
+    vnp_Params['vnp_OrderInfo'] = req.query.sid;
+    //'Thanh toan cho ma GD:' + orderId
     vnp_Params['vnp_OrderType'] = 'other';
-    vnp_Params['vnp_Amount'] = amount * 100;
+    vnp_Params['vnp_Amount'] = amount * 500 * 100;
     vnp_Params['vnp_ReturnUrl'] = returnUrl;
     vnp_Params['vnp_IpAddr'] = ipAddr;
     vnp_Params['vnp_CreateDate'] = createDate;
@@ -77,7 +88,7 @@ router.post('/create_payment_url', function (req, res, next) {
     }
 
     vnp_Params = sortObject(vnp_Params);
-
+    //vnp_Params['sid'] = req.query.sid
     let querystring = require('qs');
     let signData = querystring.stringify(vnp_Params, { encode: false });
     let crypto = require("crypto");     
@@ -87,9 +98,10 @@ router.post('/create_payment_url', function (req, res, next) {
     vnpUrl += '?' + querystring.stringify(vnp_Params, { encode: false });
     console.log(vnpUrl)
     res.redirect(vnpUrl)
+    //return res.status(200).json(vnp_Params)
 });
 
-router.get('/vnpay_return', function (req, res, next) {
+router.get('/vnpay_return', async function (req, res, next) {
     let vnp_Params = req.query;
     console.log(vnp_Params)
     let secureHash = vnp_Params['vnp_SecureHash'];
@@ -108,14 +120,81 @@ router.get('/vnpay_return', function (req, res, next) {
     let crypto = require("crypto");     
     let hmac = crypto.createHmac("sha512", secretKey);
     let signed = hmac.update(new Buffer(signData, 'utf-8')).digest("hex");     
-
-    if(secureHash === signed){
-        //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua
-
-        res.render('success', {code: vnp_Params['vnp_ResponseCode']})
-    } else{
-        res.render('success', {code: '97'})
+    console.log("Sign message: " + signed)
+    let date = new Date();
+    let createDate = moment(date).format('YYYYMMDDHHmmss');
+    if (vnp_Params['vnp_ResponseCode'] == "00") {
+        console.log("relog ----------------- relog")
+        return new Promise((resolve,reject)=>{
+            client.query(`
+                INSERT INTO PAYMENT(PMtime,PMpages_purchased,PMmethod,SID)
+                VALUES(?,?,?,?)
+            `,[createDate,vnp_Params['vnp_Amount'],"VNPay",parseInt(vnp_Params['vnp_OrderInfo'])],(err,res)=>{
+                console.log("internal log ----------------- internal log")
+                if (err) reject({
+                    status: 400,
+                    msg: "Giao dịch thất bại",
+                    data:null
+                })
+                else resolve({
+                    status: 200,
+                    msg:"Giao dịch thành công",
+                    data: {
+                        PMtime: createDate,
+                        PMpages_purchased: vnp_Params['vpn_Amount']/100,
+                        PMmethod: "VNPay",
+                        sid: parseInt(vnp_Params['vnp_OrderInfo'])
+                    }
+                })
+            })
+        })
     }
+    else return res.status(400).json({
+        status: 400,
+        msg: "Giao dịch thất bại",
+        data: null
+    })
+    // client.query(`
+    //     INSERT INTO PAYMENT(PMtime,PMpages_purchased,PMmethod,SID)
+    //     VALUES(?,?,?,?)
+    // `,[createDate,vnp_Params['vnp_Amount'],"VNPay",parseInt(vnp_Params['vnp_TxnRef'])],(err,res)=>{
+    //     if (err){
+    //         return res.status(400).json({
+    //             status: 400,
+    //             msg: "Giao dịch thất bại",
+    //             data: null
+    //         })
+    //     }
+    //     else return res.status(200).json({
+    //         status: 200,
+    //         msg:"Giao dịch thành công",
+    //         data: {
+    //             PMtime: createDate,
+    //             PMpages_purchased: vnp_Params['vpn_Amount'],
+    //             PMmethod: "VNPay",
+    //             sid: parseInt(vnp_Params['vnp_TxnRef'])
+    //         }
+    //     })
+    // })
+    // return res.status(200).json({
+    //     status: 200,
+    //     msg:"Giao dịch thành công",
+    //     data: {
+    //         PMtime: createDate,
+    //         PMpages_purchased: vnp_Params['vpn_Amount'],
+    //         PMmethod: "VNPay",
+    //         sid: parseInt(vnp_Params['vnp_TxnRef'])
+    //     }
+    // })
+    
+    
+    // if(secureHash === signed){
+    //     //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua
+
+    //     res.render('success', {code: vnp_Params['vnp_ResponseCode']})
+    // } else{
+    //     res.render('success', {code: '97'})
+    // }
 });
 
 router.get('/vnpay_ipn', function (req, res, next) {
