@@ -26,7 +26,7 @@ async function listAllPrintingLog(Log) {
     let query = 'SELECT * FROM TRANSACTION'
     let params = []
     if (Log.sid) {
-        query += ' AND SID = ?'
+        query += ' WHERE SID = ?'
         params.push(Log.sid)
     }
     if (Log.sid && Log.pid) {
