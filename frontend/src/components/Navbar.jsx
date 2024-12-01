@@ -13,14 +13,13 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { Link } from "react-router-dom";
-import axios from "axios";
 
 const Navbar = ({ title, menuItems, routes, active }) => {
-  const [mobileOpen, setMobileOpen] = useState(false); // State for mobile menu visibility
+  const [mobileOpen, setMobileOpen] = useState(false); // Trạng thái cho menu thu gọn
   const userName = "Nguyễn Văn A";
-  const userAvatar = "https://i.pravatar.cc/150?img=3"; // Sample Avatar
+  const userAvatar = "https://i.pravatar.cc/150?img=3"; // Avatar giả
 
-  // Toggle the drawer (mobile menu)
+  // Toggle menu khi ở chế độ thu gọn
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
@@ -40,7 +39,7 @@ const Navbar = ({ title, menuItems, routes, active }) => {
           <IconButton
             color="inherit"
             edge="start"
-            sx={{ display: { xs: "block", lg: "none" }, mr: "5px" }}
+            sx={{ display: { xs: "block", xl: "none" }, mr: "5px" }}
             onClick={handleDrawerToggle}
           >
             <MenuIcon />
@@ -50,18 +49,9 @@ const Navbar = ({ title, menuItems, routes, active }) => {
           <img
             src="https://hcmut.edu.vn/img/nhanDienThuongHieu/01_logobachkhoatoi.png"
             alt="HCMUT Logo"
-            style={{
-              width: "80px", // Reduced size for smaller screens
-              marginRight: "10px",
-            }}
+            style={{ width: "100px", marginRight: "10px" }}
           />
-          <Typography
-            variant="h6"
-            sx={{
-              flex: 1,
-              fontSize: { xs: "1.2rem", sm: "1.5rem" }, // Adjust font size for smaller screens
-            }}
-          >
+          <Typography variant="h6" sx={{ flex: 1 }}>
             {title}
           </Typography>
 
@@ -73,14 +63,13 @@ const Navbar = ({ title, menuItems, routes, active }) => {
               to={routes[index]}
               color="inherit"
               sx={{
-                display: { xs: "none", lg: "inline-flex" }, // Show only on larger screens
-                margin: "0 7px",
-                padding: "8px 10px", // Reduced padding
+                display: { xs: "none", xl: "inline-flex" }, // Chỉ hiển thị trên màn hình lớn
+                margin: "0 15px",
+                padding: "10px 20px",
                 color: active === item ? "#000000" : "#ffffff",
                 fontWeight: active === item ? "bold" : "normal",
                 backgroundColor: active === item ? "#ffffff" : "transparent",
-                letterSpacing: "1.1px",
-                fontSize: { xs: "0.9rem", sm: "1rem" }, // Adjust font size for smaller screens
+                letterSpacing: "1.5px",
               }}
             >
               {item}
@@ -91,10 +80,10 @@ const Navbar = ({ title, menuItems, routes, active }) => {
           <Typography
             variant="body1"
             sx={{
-              marginRight: "10px",
+              marginRight: "15px",
               color: "white",
-              fontSize: { xs: "0.9rem", sm: "1rem" }, // Adjust font size for smaller screens
-              display: { xs: "none", sm: "inline-flex" }, // Hide on small screens
+              fontSize: "16px",
+              display: "inline-flex", // Chỉ hiển thị trên màn hình lớn
             }}
           >
             {userName}
@@ -102,9 +91,8 @@ const Navbar = ({ title, menuItems, routes, active }) => {
           <Avatar
             src={userAvatar}
             sx={{
-              marginRight: "10px",
-              display: { xs: "none", sm: "inline-flex" }, // Hide on small screens
-              width: 30, height: 30, // Reduced avatar size
+              marginRight: "15px",
+              display: "inline-flex", // Chỉ hiển thị trên màn hình lớn
             }}
           />
 
@@ -112,14 +100,13 @@ const Navbar = ({ title, menuItems, routes, active }) => {
           <Button
             color="inherit"
             sx={{
-              margin: "0 10px",
-              padding: "8px 15px", // Reduced padding
+              margin: "0 15px",
+              padding: "10px 20px",
               backgroundColor: "#1E90FF",
               color: "#ffffff",
               ml: "auto",
               letterSpacing: "1.5px",
-              display: { xs: "none", lg: "inline-flex" }, // Show only on larger screens
-              fontSize: { xs: "0.9rem", sm: "1rem" }, // Adjust font size
+              display: "inline-flex", // Chỉ hiển thị trên màn hình lớn
             }}
             onClick={Logout}
           >
@@ -134,11 +121,11 @@ const Navbar = ({ title, menuItems, routes, active }) => {
         open={mobileOpen}
         onClose={handleDrawerToggle}
         sx={{
-          display: { xs: "block", xl: "none" }, // Show only on small screens
+          display: { xs: "block", xl: "none" }, // Chỉ hiển thị trên màn hình nhỏ
           "& .MuiDrawer-paper": { width: 200, backgroundColor: "#000", color: "#fff" },
         }}
       >
-        <List sx={{ padding: "80px 0 0 0" }}>
+        <List sx={{ padding: "90px 0 0 0" }}>
           {menuItems.map((item, index) => (
             <ListItem
               button

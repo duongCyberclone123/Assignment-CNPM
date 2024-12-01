@@ -14,6 +14,7 @@ const PrivateRoute = () => {
   }
   return <Outlet />;
 };
+
 const App = () => {
   return (
     <Router>

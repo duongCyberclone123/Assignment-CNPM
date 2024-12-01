@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef  } from 'react';
 import { Button, Dialog, DialogTitle, Box, LinearProgress, Typography } from "@mui/material";
 
 import Navbar from '../../components/Navbar';
@@ -25,7 +25,7 @@ const Print = () => {
     const [docSize, setDocSize] = useState(0);
     let dID = -1;
     const [docName, setDocName] = useState("");
-    const studentID = localStorage.getItem("ID");
+    const studentID = JSON.parse(localStorage.getItem("userData")).ID;
 
     const [loaddone, setLoaddone] = useState(false);
     const [successModalOpen, setSuccessModalOpen] = useState(false);
@@ -95,9 +95,7 @@ const Print = () => {
             },
                 { params: { uid: studentID }, }
             );
-            console.log(response.data.data.did);
             dID = response.data.data.did;
-            console.log(dID);
         } catch (error) {
             console.error("Error while upload document", error.message);
         }
@@ -126,21 +124,26 @@ const Print = () => {
     const [progress, setProgress] = useState(0); // Trạng thái cho tiến trình
     useEffect(() => {
         if (progress === 100) {
-            setLoaddone(true); // Đánh dấu là tải xong
+            // setLoaddone(true); // Đánh dấu là tải xong
         }
     }, [progress])
+    const timerRef = useRef(null); // Lưu trữ ID của timer
 
     const startLoad = () => {
-        setProgress(0);
-        setLoaddone(false);
-        const timer = setInterval(() => {
-            setProgress((prevProgress) =>
-                prevProgress < 100 ? prevProgress + 1 : 100
-            );
-        }, 50); // Cập nhật mỗi 50ms
-        return () => {
-            clearInterval(timer); // Xóa timer khi component bị unmount
-        };
+      setProgress(0);
+      setLoaddone(false);
+      
+      // Hủy bỏ interval cũ nếu có
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+  
+      // Tạo interval mới và lưu ID vào useRef
+      timerRef.current = setInterval(() => {
+        setProgress((prevProgress) =>
+          prevProgress < 100 ? prevProgress + 1 : 100
+        );
+      }, 50); // Cập nhật mỗi 50ms
     };
 
     return (<>
@@ -210,25 +213,27 @@ const Print = () => {
                         flexDirection: "column",
                         alignItems: "center",
                         justifyContent: "center",  // Căn giữa các phần tử
-                        padding: "20px",
-                        width: "650px",
-                        height: "400px",
+                        // padding: "20px",
+                        width: "500px",
+                        height: "240px",
                     }}
                 >
                     {/* Thanh tiến trình */}
-                    <LinearProgress
-                        variant="determinate"
-                        value={progress}
-                        sx={{
-                            width: "70%",  // Đảm bảo thanh tiến trình chiếm 80% chiều rộng của box
-                            height: "10px",  // Chiều cao của thanh tiến trình
-                            borderRadius: "5px",  // Bo góc cho thanh tiến trình
-                            backgroundColor: "#ddd",  // Màu nền của thanh tiến trình
-                            "& .MuiLinearProgress-bar": {
-                                backgroundColor: "#1E90FF",  // Màu sắc của thanh tiến trình
-                            },
-                        }}
-                    />
+                    <Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
+                        <LinearProgress
+                            variant="determinate"
+                            value={progress}
+                            sx={{
+                                width: "80%",  // Đảm bảo thanh tiến trình chiếm 80% chiều rộng của box
+                                height: "10px",  // Chiều cao của thanh tiến trình
+                                borderRadius: "5px",  // Bo góc cho thanh tiến trình
+                                backgroundColor: "#ddd",  // Màu nền của thanh tiến trình
+                                "& .MuiLinearProgress-bar": {
+                                    backgroundColor: "#1E90FF",  // Màu sắc của thanh tiến trình
+                                },
+                            }}
+                        />
+                    </Box>
                     {/* Hiển thị phần trăm */}
                     <Typography
                         variant="body1"

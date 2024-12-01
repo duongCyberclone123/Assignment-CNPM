@@ -38,21 +38,20 @@ const History = () => {
     useEffect(() => {
         const run = async () => {
             try {
-                const sID = localStorage.getItem("ID");
-                console.log(sID);
+                const sID =JSON.parse(localStorage.getItem("userData")).ID;
                 const response = await axios.get("http://localhost:8000/api/printing/viewHistoryLog", {
                     params: { sid: sID },
                 });
 
                 if (response.status === 200) {
                     setHistoryData(response.data.data.data);
-                    console.log(response.data.data.data);
                 }
             } catch (error) {
                 console.error("Error while fetching printers:", error.message);
             }
         };
         run();
+
     }, []);
 
     const getBackgroundColor = (status) => {
