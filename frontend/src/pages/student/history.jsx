@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Card, CardContent, Typography, Grid } from '@mui/material';
 import Navbar from '../../components/Navbar'
 
@@ -11,76 +11,49 @@ const History = () => {
     const routes = ['/home', '/print', '/history', '/purchase'];
 
 
-    const historyData = [
-        {
-            title: 'Document A',
-            time: '13:26-13:45 25/10/2024',
-            pages: 2,
-            pageSize: 'A4',
-            copies: 3,
-            color: true,
-            twoSided: false,
-            orientation: true,
-            fileSize: '200 KB',
-            location: 'A2 Bach Khoa tp Ho Chi Minh',
-            status: 'Pending',
-        },
-        {
-            title: 'Document B',
-            time: '14:00-14:20 26/10/2024',
-            pages: 4,
-            pageSize: 'A3',
-            copies: 2,
-            color: false,
-            twoSided: true,
-            orientation: false,
-            fileSize: '500 KB',
-            location: 'A3 Bach Khoa tp Ho Chi Minh',
-            status: 'Success',
-        },
-        {
-            title: 'Document C',
-            time: '15:10-15:40 27/10/2024',
-            pages: 10,
-            pageSize: 'A4',
-            copies: 1,
-            color: true,
-            twoSided: true,
-            orientation: true,
-            fileSize: '1.2 MB',
-            location: 'A4 Bach Khoa tp Ho Chi Minh',
-            status: 'Failed',
-        },
-        {
-            title: 'Document C',
-            time: '15:10-15:40 27/10/2024',
-            pages: 10,
-            pageSize: 'A4',
-            copies: 1,
-            color: true,
-            twoSided: true,
-            orientation: true,
-            fileSize: '1.2 MB',
-            location: 'A4 Bach Khoa tp Ho Chi Minh',
-            status: 'Failed',
-        },
-    ];
+    const [historyData, sethistoryData] = useState([]);
+
+
+    function formatTimeRange(startTime, endTime) {
+        // Chuyển đổi chuỗi thời gian ISO 8601 thành đối tượng Date
+        const startDate = new Date(startTime);
+        const endDate = new Date(endTime);
+
+        // Lấy giờ và phút từ Date
+        const startHour = startDate.getUTCHours().toString().padStart(2, '0');
+        const startMinute = startDate.getUTCMinutes().toString().padStart(2, '0');
+        const endHour = endDate.getUTCHours().toString().padStart(2, '0');
+        const endMinute = endDate.getUTCMinutes().toString().padStart(2, '0');
+
+        // Lấy ngày và tháng từ Date
+        const day = startDate.getUTCDate().toString().padStart(2, '0');
+        const month = (startDate.getUTCMonth() + 1).toString().padStart(2, '0');  // Tháng bắt đầu từ 0
+        const year = startDate.getUTCFullYear();
+
+        // Trả về chuỗi định dạng theo yêu cầu
+        return `${startHour}:${startMinute}-${endHour}:${endMinute} ${day}-${month}-${year}`;
+    }
 
 
     useEffect(() => {
         const run = async () => {
             try {
                 const sID = localStorage.getItem("ID");
-                const response = await axios.get("http://localhost:8000/api/printing/viewHistoryLog", { studentID: sID });
+                console.log(sID);
+                const response = await axios.get("http://localhost:8000/api/printing/viewHistoryLog", {
+                    params: { sid: sID },
+                });
+
                 if (response.status === 200) {
-                    console.log(response);
+                    sethistoryData(response.data.data.data);
+                    console.log(response.data.data.data);
                 }
             } catch (error) {
                 console.error("Error while fetching printers:", error.message);
             }
-        }
+        };
         run();
-    }), [];
+    }, []);
 
     const getBackgroundColor = (status) => {
         switch (status) {
@@ -118,11 +91,11 @@ const History = () => {
                 }}
             >
                 <Grid container spacing={3} justifyContent="left">
-                    {historyData.map((item, index) => (
+                    {historyData.length > 0 && historyData.map((item, index) => (
                         <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
                             <Card
                                 sx={{
-                                    backgroundColor: getBackgroundColor(item.status),
+                                    backgroundColor: getBackgroundColor(item.Tstatus),
                                     borderRadius: '12px',
                                     padding: '16px 16px 0 16px',
                                     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
@@ -131,12 +104,12 @@ const History = () => {
                             >
                                 <CardContent>
                                     {/* Title */}
-                                    <Typography
+                                    {/* <Typography
                                         variant="h5"
                                         sx={{ fontWeight: 'bold', marginBottom: '12px', display: 'flex', alignItems: 'center' }}
                                     >
                                         {item.title}
-                                    </Typography>
+                                    </Typography> */}
 
                                     {/* Time */}
                                     <Typography
@@ -149,7 +122,7 @@ const History = () => {
                                             alt="Time Icon"
                                             style={{ width: '18px', height: '18px', marginRight: '6px' }} // Size and margin for the image
                                         />
-                                        {item.time}
+                                        {formatTimeRange(item.Tstart_time, item.Tend_time)}
                                     </Typography>
 
 
@@ -163,10 +136,10 @@ const History = () => {
                                         }}
                                     >
                                         <Typography variant="body2">
-                                            <strong>Pages:</strong> {item.pages} ({item.pageSize})
+                                            <strong>Pages:</strong> {item.Tpages_per_copy}
                                         </Typography>
                                         <Typography variant="body2">
-                                            <strong>No copies:</strong> {item.copies}
+                                            <strong>No copies:</strong> {item.Tcopies}
                                         </Typography>
                                     </Box>
 
@@ -180,17 +153,17 @@ const History = () => {
                                         }}
                                     >
                                         <Typography variant="body2">
-                                            <strong>Color:</strong> {item.color ? 'yes' : 'no'}
+                                            <strong>Color:</strong> {item.isColoring ? 'yes' : 'no'}
                                         </Typography>
                                         <Typography variant="body2">
-                                            <strong>Two-sided:</strong> {item.twoSided ? 'yes' : 'no'}
+                                            <strong>Two-sided:</strong> {item.Tis_double_size ? 'yes' : 'no'}
                                         </Typography>
                                     </Box>
 
 
                                     {/* Orientation */}
                                     <Typography variant="body2" sx={{ marginBottom: '8px' }}>
-                                        <strong>Orientation:</strong> {item.orientation ? 'yes' : 'no'}
+                                        <strong>Orientation:</strong> {item.isHorizon ? 'Horizontial' : 'Vertical'}
                                     </Typography>
 
                                     {/* File Size */}
@@ -199,18 +172,17 @@ const History = () => {
                                     </Typography>
 
                                     {/* Location */}
-                                    <Typography
+                                    {/* <Typography
                                         variant="body2"
                                         sx={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}
                                     >
-                                        {/* Image as icon */}
                                         <img
-                                            src={location} // Assuming time.png is in 'public/assets'
+                                            src={location} 
                                             alt="Time Icon"
                                             style={{ width: '18px', height: '18px', marginRight: '6px' }}
                                         />
                                         {item.location}
-                                    </Typography>
+                                    </Typography> */}
                                 </CardContent>
                             </Card>
                         </Grid>

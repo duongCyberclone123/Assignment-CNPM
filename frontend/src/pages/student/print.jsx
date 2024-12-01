@@ -5,6 +5,7 @@ import Navbar from '../../components/Navbar';
 import Calendar from '../../components/Calendar';
 import FileUpload from '../../components/Fileupload';
 import PrinterList from '../../components/Printerlist';
+import { param } from '../../../../backend/src/routes/printingProcess';
 
 const Print = () => {
     const menuItems = ['Trang chủ', 'In tài liệu', 'Lịch sử in', 'Mua trang in'];
@@ -13,13 +14,18 @@ const Print = () => {
     let pageSize = "A4";
     let isDoubleside = true, isColor = true, isHorizon = true;
     let numberOfCopies = 1;
-    let pages = [];
+    let numOfPages = 0;
+    let dID = -1;
+    let docSize = 0;
+    let docName = "";
+    const studenID = localStorage.getItem("ID");
     const handleFileConfigure = (id, value) => {
         switch (id) {
             case 1:
                 pageSize = value;
                 break;
             case 2:
+                numOfPages = value;
                 break
             case 3:
                 isDoubleside = (value == "two") ? true : false;
@@ -38,26 +44,59 @@ const Print = () => {
                 isDoubleside = true; isColor = true; isHorizon = true;
                 numberOfCopies = 1;
                 break;
+            case 10:
+                docSize = value;
+                break
+            case 11:
+                docName = value;
+                break
         }
+        console.log({ pageSize, isDoubleside, isColor, isHorizon, numberOfCopies, numOfPages });
     }
     let PID = -1;
     const handlePrinterConfigure = (value) => {
         PID = value;
     }
 
-    // const sentTransaction = async ()=>{
-    //     try {
-    //         const response = await axios.get("http://localhost:8000/api/printing/uploadFile", param{
-                
-    //         });
-    //         if (response.status === 200) {
-    //             console.log(response.data.data);
-    //             setPrinters(response.data.data);
-    //         }
-    //     } catch (error) {
-    //         console.error("Error while fetching printers:", error.message);
-    //     }
-    // };
+    const uploadFile = async () => {
+        try {
+            const response = await axios.get("http://localhost:8000/api/printing/uploadFile", {
+                params: { uid: localStorage.getItem("ID") },
+                body: {
+                    dname: docName,
+                    dsize: docSize,
+                    dformat: "PDF",
+                    dpage_num: numOfPages
+                }
+            });
+            dID = response.did;
+        } catch (error) {
+            console.error("Error while upload document", error.message);
+        }
+    };
+
+    const makeTransition = async () => {
+        try {
+            const responseMakeTran = await axios.get("http://localhost:8000/api/printing/receivePrintingRequest", {
+                body: {
+                    isdoublesize: isDoubleside,
+                    ishorzon: isHorizon,
+                    iscoloring: isColor,
+                    tpagesize: pageSize,
+                    tpages_per_copy: numOfPages,
+                    tcopies: numberOfCopies,
+                    pid: PID,
+                    did: '1',
+                    sid: studenID,
+                }
+            });
+            const responseUpTran = await axios.get("http://localhost:8000/api/printing/Printing", {
+                params: { pID: PID }
+            });
+        } catch (error) {
+            console.error("Error while upload document", error.message);
+        }
+    }
 
     return (<>
         <style>
@@ -94,7 +133,10 @@ const Print = () => {
                             variant="contained"
                             component="span"
                             sx={{ height: "100%" }}
-                            onClick={{}}
+                            onClick={async () => {
+                                await uploadFile();
+                                makeTransition();
+                            }}
                         >
                             PRINT
                         </Button>

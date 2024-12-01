@@ -1,14 +1,44 @@
 import React, { useState } from "react";
-import { Button, Typography, Box, Modal, Backdrop, Fade } from "@mui/material";
+import { Button, Typography, Box, Modal, Backdrop, Fade, TextField } from "@mui/material";
 
 const FileUpload = ({ onChangeValue }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileContent, setFileContent] = useState(null);
   const [openPreview, setOpenPreview] = useState(false);
 
+  const [pageCount, setPageCount] = useState("");
+  const [error, setError] = useState("");
 
   // Thiết lập in
   const [pagesToPrint, setPagesToPrint] = useState("all"); // Lựa chọn mặc định là "all"
+
+  let startPage = 1, endPage = 1;
+  const [errorPage, seterrorPage] = useState("");
+
+  const handlePageCountChange = (value) => {
+    // Kiểm tra nếu giá trị nhập vào không phải số hoặc nhỏ hơn hoặc bằng 0
+    if (isNaN(value) || value <= 0) {
+      setError("Số trang phải là một số và lớn hơn 0.");
+    } else {
+      switch (pagesToPrint) {
+        case "all":
+          onChangeValue(2, parseInt(value));
+          break;
+        case "odd":
+          onChangeValue(2, parseInt(Math.ceil(value/2)));
+          break;
+        case "even":
+          onChangeValue(2, parseInt(Math.floor(value/2)));
+          break;
+        case "custom":
+          setPagesToPrint("all");
+          onChangeValue(2, parseInt(value));
+          break;
+      }
+      setPageCount(value);
+      setError("");
+    }
+  };
 
   // Xử lý khi người dùng chọn file
   const handleFileChange = (event) => {
@@ -22,6 +52,8 @@ const FileUpload = ({ onChangeValue }) => {
           setFileContent(reader.result); // Đặt Data URL cho PDF
         };
         reader.readAsDataURL(file);
+        onChangeValue(10,parseInt((selectedFile?.size / 1024 / 1024).toFixed(2)));
+        onChangeValue(11,selectedFile.name);
       } else {
         alert("Chỉ được chọn file PDF.");
         event.target.value = null; // Reset input nếu loại file không phải PDF
@@ -32,7 +64,6 @@ const FileUpload = ({ onChangeValue }) => {
   // Mở modal preview
   const handlePreview = () => {
     if (!fileContent) {
-      alert("No file to preview!");
       return;
     }
     setOpenPreview(true);
@@ -172,6 +203,32 @@ const FileUpload = ({ onChangeValue }) => {
                 </Typography>
               </Box>
 
+              {/* Nhập số trang */}
+              <Box sx={{ margin: "10px 0", display: "flex", flexDirection: "column" }}>
+                <Typography variant="body1" sx={{ marginBottom: "8px" }}>
+                  <strong>Number of Pages:</strong>
+                  <span style={{ fontSize: "12px", color: "gray" }}>
+                    (Ensure the page count is correct for the file)
+                  </span>
+                </Typography>
+                <TextField
+                  fullWidth
+                  defaultValue={pageCount}
+
+                  onChange={(e) => handlePageCountChange(e.target.value)}
+                  error={!!error}
+                  helperText={error || null}
+                  label="Enter Number of Pages"
+                  variant="outlined"
+                  sx={{
+                    borderColor: error ? "red" : "#ddd",
+                  }}
+                />
+              </Box>
+
+
+
+
               {/* Thiết lập in */}
               <Box
                 sx={{
@@ -214,7 +271,7 @@ const FileUpload = ({ onChangeValue }) => {
                       marginBottom: "10px",
                     }}
                     onChange={(e) => {
-                      onChangeValue(6, e.target.value);
+                      onChangeValue(6, parseInt(e.target.value));
                     }}
                     onFocus={(e) => (e.target.style.borderColor = "#1976d2")}
                     onBlur={(e) => (e.target.style.borderColor = "#ccc")}
@@ -268,7 +325,20 @@ const FileUpload = ({ onChangeValue }) => {
                   </Typography>
                   <select
                     value={pagesToPrint}
-                    onChange={(e) => setPagesToPrint(e.target.value)}
+                    onChange={(e) => {
+                      setPagesToPrint(e.target.value);
+                      switch (e.target.value) {
+                        case "all":
+                          onChangeValue(2, pageCount);
+                          break;
+                        case "odd":
+                          onChangeValue(2, Math.ceil(pageCount / 2));
+                          break;
+                        case "even":
+                          onChangeValue(2, Math.floor(pageCount / 2));
+                          break;
+                      }
+                    }}
                     style={{
                       flex: "1",
                       padding: "10px",
@@ -281,7 +351,6 @@ const FileUpload = ({ onChangeValue }) => {
                     }}
                     onFocus={(e) => (e.target.style.borderColor = "#1976d2")}
                     onBlur={(e) => (e.target.style.borderColor = "#ccc")}
-                    con
                   >
                     <option value="all">All</option>
                     <option value="odd">Odd Pages</option>
@@ -295,9 +364,10 @@ const FileUpload = ({ onChangeValue }) => {
                     <input
                       type="number"
                       placeholder="From"
+                      defaultValue={startPage}
                       min={1}
                       style={{
-                        flex: "1",
+                        width: "50%",
                         padding: "10px",
                         border: "1px solid #ccc",
                         borderRadius: "8px",
@@ -306,17 +376,27 @@ const FileUpload = ({ onChangeValue }) => {
                         backgroundColor: "#fff",
                         transition: "border-color 0.3s ease",
                         marginBottom: "10px",
-
                       }}
                       onFocus={(e) => (e.target.style.borderColor = "#1976d2")}
                       onBlur={(e) => (e.target.style.borderColor = "#ccc")}
+                      onChange={(e) => {
+                        startPage = e.target.value;
+                        if (startPage > endPage)
+                          seterrorPage("loi");
+                        else
+                          onChangeValue(2, parseInt(endPage - startPage + 1))
+                      }}
+                      sx={{
+                        borderColor: errorPage ? "red" : "#ddd",
+                      }}
                     />
                     <input
                       type="number"
                       placeholder="To"
                       min={1}
+                      defaultValue={endPage}
                       style={{
-                        flex: "1",
+                        width: "50%",
                         padding: "10px",
                         border: "1px solid #ccc",
                         borderRadius: "8px",
@@ -328,6 +408,16 @@ const FileUpload = ({ onChangeValue }) => {
                       }}
                       onFocus={(e) => (e.target.style.borderColor = "#1976d2")}
                       onBlur={(e) => (e.target.style.borderColor = "#ccc")}
+                      onChange={(e) => {
+                        endPage = e.target.value;
+                        if (startPage > endPage)
+                          seterrorPage("loi");
+                        else
+                          onChangeValue(2, parseInt(endPage - startPage + 1))
+                      }}
+                      sx={{
+                        borderColor: errorPage ? "red" : "#ddd",
+                      }}
                     />
                   </Box>
                 )}

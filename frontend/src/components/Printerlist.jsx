@@ -12,7 +12,7 @@ import axios from 'axios';
 
 import PR from "../assets/printer.png"; // Path to the printer image
 
-const PrinterList = ({onChangeValue}) => {
+const PrinterList = ({ onChangeValue }) => {
     // thong tin tra ve tu api
     const [printers, setPrinters] = useState([]);
     // Chon may
@@ -91,6 +91,7 @@ const PrinterList = ({onChangeValue}) => {
                                         display: "flex",
                                         flexDirection: "row",
                                         alignItems: "center",
+                                        width:"100%"
                                     }}
                                     onClick={() => selectPrinter(printer)}
                                 >
@@ -107,8 +108,18 @@ const PrinterList = ({onChangeValue}) => {
                                         }}
                                     />
                                     {/* Printer Details */}
-                                    <CardContent sx={{ padding: 0 }}>
-                                        <Typography variant="subtitle1" fontWeight="bold">
+                                    <CardContent sx={{ padding: 0, maxWidth: "calc(100% -96px)"}}>
+                                        <Typography
+                                            variant="subtitle1"
+                                            fontWeight="bold"
+                                            sx={{
+                                                width: "100%",                    // Đảm bảo sử dụng hết chiều rộng của CardContent
+                                                overflow: 'hidden',               // Ẩn nội dung tràn ra ngoài
+                                                whiteSpace: 'nowrap',             // Ngăn văn bản xuống dòng
+                                                textOverflow: 'ellipsis',         // Hiển thị dấu ba chấm khi quá dài
+                                            }}
+                                            title={printer.Pname + ' (' + printer.Pmodel + ')'} // Hiển thị thông tin đầy đủ khi hover
+                                        >
                                             {printer.Pname + ' (' + printer.Pmodel + ')'}
                                         </Typography>
                                         <Typography variant="body2">ID: {printer.PID}</Typography>

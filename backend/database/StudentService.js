@@ -189,9 +189,9 @@ class StudentService{
         return new Promise((resolve, reject) => {
             client.query(`
                     INSERT INTO TRANSACTION (tstatus, tis_double_size, ishorizon,iscoloring, tpage_size,tpages_per_copy, tcopies,tstart_time, tend_time, pid, did, sid)
-                    VALUE (?,?,?,?,?,?,?,?,?,?,?,?);
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?);
             `,['pending', PrintingLog.isdoublesize, 
-                PrintingLog.ishorizon,PrintingLog.iscoloring,PrintingLog.pagesize, 
+                PrintingLog.ishorizon,PrintingLog.iscoloring,PrintingLog.tpagesize, 
                 PrintingLog.tpages_per_copy, PrintingLog.tcopies, 
                 mysqlDatetime, null,
                 PrintingLog.pid, PrintingLog.did, PrintingLog.sid],
