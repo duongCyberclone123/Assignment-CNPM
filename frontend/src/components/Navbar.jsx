@@ -1,41 +1,45 @@
-import React, { useState } from "react";
-import {
-  AppBar,
-  Toolbar,
-  IconButton,
-  Typography,
-  Button,
-  Avatar,
-  Drawer,
-  List,
-  ListItem,
-  ListItemText,
-} from "@mui/material";
+import React, { useState, useEffect} from "react";
+import { AppBar, Toolbar, IconButton, Typography, Button, Avatar, Drawer, List, ListItem, ListItemText, } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { Link } from "react-router-dom";
 
-const Navbar = ({ title, menuItems, routes, active }) => {
-  const [mobileOpen, setMobileOpen] = useState(false); // Trạng thái cho menu thu gọn
-  const userName = "Nguyễn Văn A";
-  const userAvatar = "https://i.pravatar.cc/150?img=3"; // Avatar giả
+const Navbar = ({ title, menuItems, routes, active, setActive }) => {
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Toggle menu khi ở chế độ thu gọn
+  const [userName, setUserName] = useState('');
+  const [userAvatar, setUserAvatar] = useState('');
+  useEffect(() => {
+    const userData = localStorage.getItem('userData');
+    if (userData) {
+      const parsedData = JSON.parse(userData);
+      setUserName(parsedData.username);  
+      setUserAvatar(parsedData.avatar || 'https://i.pravatar.cc/150?img=3'); 
+    }
+  }, []);
+  // Toggle the drawer (mobile menu)
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
+  const handleMenuItemClick = (item) => {
+    if (setActive) {
+      setActive(item); // Set active state
+    }
+    if (mobileOpen) {
+      setMobileOpen(false); // Close the drawer on click
+    }
+  };
+
   const Logout = async () => {
-    // Clear user data from localStorage
-    localStorage.removeItem("ID");
+    localStorage.removeItem("userData");
     localStorage.removeItem("token");
-    window.location.href = '/'; // Redirect to login page
+    window.location.href = '/';
   };
 
   return (
     <>
       <AppBar position="fixed" sx={{ backgroundColor: "#000", boxShadow: "none" }}>
         <Toolbar>
-          {/* Menu Icon */}
           <IconButton
             color="inherit"
             edge="start"
@@ -45,17 +49,16 @@ const Navbar = ({ title, menuItems, routes, active }) => {
             <MenuIcon />
           </IconButton>
 
-          {/* Logo */}
           <img
             src="https://hcmut.edu.vn/img/nhanDienThuongHieu/01_logobachkhoatoi.png"
-            alt="HCMUT Logo"
+            alt="Logo"
             style={{ width: "100px", marginRight: "10px" }}
           />
+
           <Typography variant="h6" sx={{ flex: 1 }}>
             {title}
           </Typography>
 
-          {/* Menu Buttons */}
           {menuItems.map((item, index) => (
             <Button
               key={index}
@@ -63,7 +66,7 @@ const Navbar = ({ title, menuItems, routes, active }) => {
               to={routes[index]}
               color="inherit"
               sx={{
-                display: { xs: "none", xl: "inline-flex" }, // Chỉ hiển thị trên màn hình lớn
+                display: { xs: "none", xl: "inline-flex" },
                 margin: "0 15px",
                 padding: "10px 20px",
                 color: active === item ? "#000000" : "#ffffff",
@@ -71,32 +74,31 @@ const Navbar = ({ title, menuItems, routes, active }) => {
                 backgroundColor: active === item ? "#ffffff" : "transparent",
                 letterSpacing: "1.5px",
               }}
+              onClick={() => handleMenuItemClick(item)}
             >
               {item}
             </Button>
           ))}
 
-          {/* User Info */}
           <Typography
             variant="body1"
             sx={{
               marginRight: "15px",
               color: "white",
               fontSize: "16px",
-              display: "inline-flex", // Chỉ hiển thị trên màn hình lớn
+              display: "inline-flex",
             }}
           >
-            {userName}
+            {userName || "Người dùng"}
           </Typography>
           <Avatar
             src={userAvatar}
             sx={{
               marginRight: "15px",
-              display: "inline-flex", // Chỉ hiển thị trên màn hình lớn
+              display: "inline-flex",
             }}
           />
 
-          {/* Logout Button */}
           <Button
             color="inherit"
             sx={{
@@ -106,7 +108,7 @@ const Navbar = ({ title, menuItems, routes, active }) => {
               color: "#ffffff",
               ml: "auto",
               letterSpacing: "1.5px",
-              display: "inline-flex", // Chỉ hiển thị trên màn hình lớn
+              display: "inline-flex",
             }}
             onClick={Logout}
           >
@@ -115,13 +117,12 @@ const Navbar = ({ title, menuItems, routes, active }) => {
         </Toolbar>
       </AppBar>
 
-      {/* Drawer for Mobile Menu */}
       <Drawer
         anchor="left"
         open={mobileOpen}
         onClose={handleDrawerToggle}
         sx={{
-          display: { xs: "block", xl: "none" }, // Chỉ hiển thị trên màn hình nhỏ
+          display: { xs: "block", xl: "none" },
           "& .MuiDrawer-paper": { width: 200, backgroundColor: "#000", color: "#fff" },
         }}
       >
@@ -132,7 +133,7 @@ const Navbar = ({ title, menuItems, routes, active }) => {
               key={index}
               component={Link}
               to={routes[index]}
-              onClick={handleDrawerToggle}
+              onClick={() => handleMenuItemClick(item)}
             >
               <ListItemText
                 primary={item}
@@ -151,5 +152,6 @@ const Navbar = ({ title, menuItems, routes, active }) => {
     </>
   );
 };
+
 
 export default Navbar;

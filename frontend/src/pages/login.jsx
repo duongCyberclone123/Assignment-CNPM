@@ -32,7 +32,7 @@ const Login = () => {
           navigate('/spsodashboard');
         } else if (loadedUser.ID >= 2000 && loadedUser.ID <= 5000) {
           // Vai trò là student
-          navigate('/student-dashboard');
+          navigate('/home');
         } else {
           alert('Không xác định vai trò người dùng.');
         }

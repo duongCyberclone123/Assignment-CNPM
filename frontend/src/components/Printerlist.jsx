@@ -10,6 +10,7 @@ const PrinterList = ({ onChangeValue }) => {
     const [printers, setPrinters] = useState([]);
     // Chon may
     const [selectedPrinter, setSelectedPrinter] = useState(null);
+    const [selectedIndex, setSelectedIndex] = useState(-1);
     // Cho moral
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
@@ -43,11 +44,12 @@ const PrinterList = ({ onChangeValue }) => {
     return (
         <div
             style={{
-                padding: "20px",
+                padding: "10px 0",
                 textAlign: "center",
                 display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
+                flexDirection: "row",
+                justifyContent: "center",
+                gap: "20px"
             }}
         >
             <Button
@@ -55,14 +57,14 @@ const PrinterList = ({ onChangeValue }) => {
                 color="primary"
                 onClick={handleOpen}
                 sx={{
-                    //width: "100%",
-                    height: "100%",
+                    width: "160px",
+                    height: "148px",
                     backgroundColor: "white",
                     display: "flex",
                     flexDirection: "column",
                     color: "black",
                     border: "brown",
-                    borderRadius: "20px",
+                    borderRadius: "8px",
                     marginBottom: "10px"
                 }}
             >
@@ -90,7 +92,7 @@ const PrinterList = ({ onChangeValue }) => {
                 >
 
 
-                    <Typography variant="h6" sx={{ marginBottom: 2 }}>
+                    <Typography variant="h6">
                         Select Printer
                     </Typography>
 
@@ -108,7 +110,10 @@ const PrinterList = ({ onChangeValue }) => {
                                         alignItems: "center",
                                         width: "100%"
                                     }}
-                                    onClick={() => selectPrinter(printer)}
+                                    onClick={() => {
+                                        selectPrinter(printer);
+                                        selectedIndex(index);
+                                    }}
                                 >
                                     {/* Printer Image */}
                                     <Box
@@ -128,10 +133,10 @@ const PrinterList = ({ onChangeValue }) => {
                                             variant="subtitle1"
                                             fontWeight="bold"
                                             sx={{
-                                                width: "100%",                    // Đảm bảo sử dụng hết chiều rộng của CardContent
-                                                overflow: 'hidden',               // Ẩn nội dung tràn ra ngoài
-                                                whiteSpace: 'nowrap',             // Ngăn văn bản xuống dòng
-                                                textOverflow: 'ellipsis',         // Hiển thị dấu ba chấm khi quá dài
+                                                width: "100%",
+                                                overflow: 'hidden',
+                                                whiteSpace: 'nowrap',
+                                                textOverflow: 'ellipsis',
                                             }}
                                             title={printer.Pname + ' (' + printer.Pmodel + ')'} // Hiển thị thông tin đầy đủ khi hover
                                         >
@@ -171,6 +176,49 @@ const PrinterList = ({ onChangeValue }) => {
                     </Box>
                 </Box>
             </Modal>
+
+            <Box sx={{
+                height: "128px",
+                width: "200px",
+                display: selectedPrinter ? "flex" : "none",
+                flexDirection: "column",
+                alignItems: "start",
+                justifyContent: "space-between",
+                border: "2px solid #ddd",
+                borderRadius: "8px",
+                padding: "10px",
+            }}>
+                <Typography
+                    variant="subtitle1"
+                    fontWeight="bold"
+                    sx={{
+                        // width: "100%",
+                        overflow: 'hidden',
+                        whiteSpace: 'nowrap',
+                        textOverflow: 'ellipsis',
+                    }}
+                    title={selectedPrinter?.Pname + ' (' + selectedPrinter?.Pmodel + ')'} // Hiển thị thông tin đầy đủ khi hover
+                >
+                    {selectedPrinter?.Pname + ' (' + selectedPrinter?.Pmodel + ')'}
+                </Typography>
+                <Typography variant="body2" sx={{ justifySelf: "flex-start"}}>ID: {selectedPrinter?.PID}</Typography>
+                <Typography variant="body2" sx={{ justifySelf: "flex-start" }}>
+                    <strong>Base:</strong> {selectedPrinter?.Pfacility}
+                </Typography>
+                <Typography variant="body2" sx={{ justifySelf: "flex-start" }}>
+                    <strong>Building:</strong> {selectedPrinter?.Pbuilding}
+                </Typography>
+                <Typography variant="body2" sx={{ justifySelf: "flex-start" }}>
+                    <strong>Room:</strong> {selectedPrinter?.Proom}
+                </Typography>
+                <Typography
+                    variant="body2"
+                    color={selectedPrinter?.Pstatus === "Active" ? "green" : "red"}
+                    sx={{ justifySelf: "flex-start" }}
+                >
+                    {selectedPrinter?.Pstatus === "Active" ? "Ready" : "Not Ready"}
+                </Typography>
+            </Box>
         </div>
     );
 };

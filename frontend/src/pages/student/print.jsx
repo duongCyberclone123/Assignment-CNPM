@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { useState, useEffect,useRef  } from 'react';
 import { Button, Dialog, DialogTitle, Box, LinearProgress, Typography } from "@mui/material";
+import { useNavigate } from 'react-router-dom';
 
 import Navbar from '../../components/Navbar';
 import Calendar from '../../components/Calendar';
@@ -31,6 +32,7 @@ const Print = () => {
     const [successModalOpen, setSuccessModalOpen] = useState(false);
     const handleCloseModal = () => {
         setSuccessModalOpen(false);
+        navigate('/home');
     }
 
 
@@ -124,7 +126,7 @@ const Print = () => {
     const [progress, setProgress] = useState(0); // Trạng thái cho tiến trình
     useEffect(() => {
         if (progress === 100) {
-            // setLoaddone(true); // Đánh dấu là tải xong
+            setLoaddone(true); // Đánh dấu là tải xong
         }
     }, [progress])
     const timerRef = useRef(null); // Lưu trữ ID của timer

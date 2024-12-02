@@ -81,7 +81,7 @@ const FileUpload = ({ onChangeValue }) => {
   return (
     <div
       style={{
-        padding: "20px",
+        padding: "10px",
         textAlign: "center",
         display: "flex",
         flexDirection: "column",
@@ -101,14 +101,15 @@ const FileUpload = ({ onChangeValue }) => {
             variant="contained"
             component="span"
             sx={{
-              //width: "100%",
-              height: "100%",
+              width: "160px",
+              height: "148px",
               backgroundColor: "white",
-              display:"flex",
-              flexDirection:"column",
-              color : "black",
-              border :"brown",
-              borderRadius:"20px"
+              display: "flex",
+              flexDirection: "column",
+              color: "black",
+              border: "brown",
+              borderRadius: "8px",
+              marginBottom: "10px"
             }}
           >
             <img src={Upload} style={{maxWidth:"80px"}} />
@@ -122,19 +123,19 @@ const FileUpload = ({ onChangeValue }) => {
             color="primary"
             onClick={handlePreview}
             sx={{
-              //width: "100%",
-              height: "100%",
+              width: "160px",
+              height: "148px",
               backgroundColor: "white",
-              display:"flex",
-              flexDirection:"column",
-              color : "black",
-              border :"brown",
-              borderRadius:"20px",
+              display: "flex",
+              flexDirection: "column",
+              color: "black",
+              border: "brown",
+              borderRadius: "8px",
               marginBottom: "10px"
             }}
           >
             <img src={Setting} style={{maxWidth:"80px"}} />
-            Preview & Configure print
+            Preview
           </Button>
 
           <Button
@@ -146,8 +147,8 @@ const FileUpload = ({ onChangeValue }) => {
               onChangeValue(100, null);
             }}
             sx={{
-              //width: "100%",
-              height: "100%",
+              // //width: "100%",
+              // height: "100%",
               backgroundColor: "#f54949",
               display:"flex",
               flexDirection:"column",
