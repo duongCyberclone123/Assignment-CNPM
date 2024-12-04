@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Container, Typography, FormControl, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress } from '@mui/material';
 import axios from 'axios';
-import Navbar from "/components/spsonavbar";
+import Navbar from '../components/Navbar'
 
 const SPSOHistoryLog = () => {
+  const menuItems = ['Trang chủ', 'Quản lí máy in', 'Lịch sử in', 'Báo cáo'];
+  const routes = ['/spsodashboard', '/manageprinter', '/spsohistory', '/report'];
   const [studentId, setStudentId] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -39,7 +41,12 @@ const SPSOHistoryLog = () => {
 
   return (
     <Container>
-      <Navbar />
+        <Navbar
+                title="SPSO"
+                menuItems={menuItems}
+                routes={routes}
+                active={"Quản lí lịch sử in"}
+            />
       <Box sx={{ marginTop: '80px' }}></Box>
       <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', textAlign: 'center' ,color: '#1e88e5'}}>Lịch sử in</Typography>
 

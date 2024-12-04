@@ -62,7 +62,8 @@ const Calendar = ({ scale = 1 }) => {
         style={{
           display: "flex",
           flexWrap: "wrap",
-          justifyContent: "center",
+          justifyContent: "lefts",
+          
         }}
       >
         {days.map((date, index) => (

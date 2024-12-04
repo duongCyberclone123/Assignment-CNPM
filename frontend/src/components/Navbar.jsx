@@ -1,88 +1,157 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Typography, Box, AppBar, Toolbar, IconButton, Avatar } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect} from "react";
+import { AppBar, Toolbar, IconButton, Typography, Button, Avatar, Drawer, List, ListItem, ListItemText, } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import { Link } from "react-router-dom";
 
-const Navbar = () => {
-  const navigate = useNavigate();
+const Navbar = ({ title, menuItems, routes, active, setActive }) => {
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const [userName, setUserName] = useState('');
   const [userAvatar, setUserAvatar] = useState('');
-
-  // Hàm lấy thông tin người dùng từ localStorage
   useEffect(() => {
     const userData = localStorage.getItem('userData');
     if (userData) {
       const parsedData = JSON.parse(userData);
-      setUserName(parsedData.username);
-      setUserAvatar(parsedData.avatar || 'https://i.pravatar.cc/150?img=3');
+      setUserName(parsedData.username);  
+      setUserAvatar(parsedData.avatar || 'https://i.pravatar.cc/150?img=3'); 
     }
   }, []);
-
-  // Hàm điều hướng cho các mục trong thanh điều hướng
-  const handleNavigation = (path) => {
-    navigate(path);
+  // Toggle the drawer (mobile menu)
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
   };
 
-  // Hàm đăng xuất
-  const handleLogout = () => {
-    localStorage.removeItem('token'); // Xóa token
-    localStorage.removeItem('userData'); // Xóa thông tin người dùng
+  const handleMenuItemClick = (item) => {
+    if (setActive) {
+      setActive(item); // Set active state
+    }
+    if (mobileOpen) {
+      setMobileOpen(false); // Close the drawer on click
+    }
+  };
 
-    console.log("Đăng xuất thành công!");
-
-    navigate('/'); // Điều hướng về trang chủ hoặc trang đăng nhập
+  const Logout = async () => {
+    localStorage.removeItem("userData");
+    localStorage.removeItem("token");
+    window.location.href = '/';
   };
 
   return (
-    <AppBar position="fixed" sx={{ backgroundColor: '#000', boxShadow: 'none' }}>
-      <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          {/* Menu Icon */}
-          <IconButton color="inherit" edge="start" sx={{ mr: 0 }}>
+    <>
+      <AppBar position="fixed" sx={{ backgroundColor: "#000", boxShadow: "none" }}>
+        <Toolbar>
+          <IconButton
+            color="inherit"
+            edge="start"
+            sx={{ display: { xs: "block", xl: "none" }, mr: "5px" }}
+            onClick={handleDrawerToggle}
+          >
             <MenuIcon />
           </IconButton>
 
-          {/* Logo */}
           <img
             src="https://hcmut.edu.vn/img/nhanDienThuongHieu/01_logobachkhoatoi.png"
-            alt="HCMUT Logo"
-            style={{ width: '100px', marginRight: '20px' }}
+            alt="Logo"
+            style={{ width: "100px", marginRight: "10px" }}
           />
-          
-          {}
-          <Typography variant="h3" sx={{ flexGrow: 1, fontSize: '30px' }}>
-            Student
+
+          <Typography variant="h6" sx={{ flex: 1 }}>
+            {title}
           </Typography>
 
-          {/* Navigation Buttons */}
-          <Button color="inherit" sx={{ marginLeft: '60px', fontSize: '20px', marginRight: '30px' }} onClick={() => handleNavigation('/student-dashboard')}>
-            Trang chủ
-          </Button>
-          <Button color="inherit" sx={{ fontSize: '20px', marginRight: '30px' }} onClick={() => handleNavigation('/print')}>
-            In tài liệu
-          </Button>
-          <Button color="inherit" sx={{ fontSize: '20px', marginRight: '30px' }} onClick={() => handleNavigation('/history')}>
-            Lịch sử in
-          </Button>
-          <Button color="inherit" sx={{ fontSize: '20px', marginRight: '30px' }} onClick={() => handleNavigation('/purchase')}>
-            Thanh toán
-          </Button>
-        </Box>
+          {menuItems.map((item, index) => (
+            <Button
+              key={index}
+              component={Link}
+              to={routes[index]}
+              color="inherit"
+              sx={{
+                display: { xs: "none", xl: "inline-flex" },
+                margin: "0 15px",
+                padding: "10px 20px",
+                color: active === item ? "#000000" : "#ffffff",
+                fontWeight: active === item ? "bold" : "normal",
+                backgroundColor: active === item ? "#ffffff" : "transparent",
+                letterSpacing: "1.5px",
+              }}
+              onClick={() => handleMenuItemClick(item)}
+            >
+              {item}
+            </Button>
+          ))}
 
-        {/* User Info and Logout */}
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Typography variant="body1" sx={{ marginRight: '15px', color: 'white', fontSize: '16px' }}>
-            {userName || 'Người dùng'}
+          <Typography
+            variant="body1"
+            sx={{
+              marginRight: "15px",
+              color: "white",
+              fontSize: "16px",
+              display: "inline-flex",
+            }}
+          >
+            {userName || "Người dùng"}
           </Typography>
-          <Avatar src={userAvatar} sx={{ marginRight: '15px' }} />
-          <Button color="inherit" sx={{ fontSize: '16px' }} onClick={handleLogout}>
+          <Avatar
+            src={userAvatar}
+            sx={{
+              marginRight: "15px",
+              display: "inline-flex",
+            }}
+          />
+
+          <Button
+            color="inherit"
+            sx={{
+              margin: "0 15px",
+              padding: "10px 20px",
+              backgroundColor: "#1E90FF",
+              color: "#ffffff",
+              ml: "auto",
+              letterSpacing: "1.5px",
+              display: "inline-flex",
+            }}
+            onClick={Logout}
+          >
             Đăng xuất
           </Button>
-        </Box>
-      </Toolbar>
-    </AppBar>
+        </Toolbar>
+      </AppBar>
+
+      <Drawer
+        anchor="left"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        sx={{
+          display: { xs: "block", xl: "none" },
+          "& .MuiDrawer-paper": { width: 200, backgroundColor: "#000", color: "#fff" },
+        }}
+      >
+        <List sx={{ padding: "90px 0 0 0" }}>
+          {menuItems.map((item, index) => (
+            <ListItem
+              button
+              key={index}
+              component={Link}
+              to={routes[index]}
+              onClick={() => handleMenuItemClick(item)}
+            >
+              <ListItemText
+                primary={item}
+                sx={{
+                  color: active === item ? "#000000" : "#fff",
+                  fontWeight: active === item ? "bold" : "normal",
+                  backgroundColor: active === item ? "#ffffff" : "transparent",
+                  padding: "10px 20px",
+                  borderRadius: "10px"
+                }}
+              />
+            </ListItem>
+          ))}
+        </List>
+      </Drawer>
+    </>
   );
 };
+
 
 export default Navbar;

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { getOverallReport, getDetailReport } from '../services/reportService';
-import Navbar from "/components/spsonavbar";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Grid, Typography } from '@mui/material';
-
+import Navbar from '../components/Navbar'
 const Report = () => {
+  const menuItems = ['Trang chủ', 'Quản lí máy in', 'Quản lí lịch sử in', 'Báo cáo'];
+    const routes = ['/spsodashboard', '/manageprinter', '/spsohistory', '/report'];
   const [year, setYear] = useState('');
   const [month, setMonth] = useState('');
   const [overallReport, setOverallReport] = useState(null);
@@ -131,7 +132,12 @@ const Report = () => {
 
   return (
     <div style={styles.container}>
-      <Navbar /> {/* Navbar Component */}
+       <Navbar
+                title="SPSO"
+                menuItems={menuItems}
+                routes={routes}
+                active={"Báo cáo"}
+            />
 
       <Typography variant="h4" align="center" gutterBottom style={styles.pageTitle}>Báo cáo</Typography>  {/* Tiêu đề giữa trang */}
 

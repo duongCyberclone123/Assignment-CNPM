@@ -1,28 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Typography, Box, Container, AppBar, Toolbar, IconButton, Avatar } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import { useNavigate } from 'react-router-dom';
+import { Typography, Box, Container } from '@mui/material';
+import Navbar from '../components/Navbar';
 
 const StudentDashboard = () => {
-  const navigate = useNavigate();
-  
+  const menuItems = ['Trang chủ', 'In tài liệu', 'Lịch sử in', 'Mua trang in'];
+  const routes = ['/student-dashboard','/print', '/history', '/purchase'];
+
   const [userName, setUserName] = useState('');
   const [userAvatar, setUserAvatar] = useState('');
+
+
 
   // Hàm lấy thông tin người dùng từ localStorage
   useEffect(() => {
     const userData = localStorage.getItem('userData');
     if (userData) {
       const parsedData = JSON.parse(userData);
-      setUserName(parsedData.username);  
-      setUserAvatar(parsedData.avatar || 'https://i.pravatar.cc/150?img=3'); 
+      setUserName(parsedData.username);
+      setUserAvatar(parsedData.avatar || 'https://i.pravatar.cc/150?img=3');
     }
   }, []);
 
-  // Hàm điều hướng cho các mục trong thanh điều hướng
-  const handleNavigation = (path) => {
-    navigate(path);
-  };
 
   // Hàm đăng xuất
   const handleLogout = () => {
@@ -48,62 +46,13 @@ const StudentDashboard = () => {
         `}
       </style>
 
-      <AppBar position="fixed" sx={{ backgroundColor: '#000', boxShadow: 'none' }}>
-        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton color="inherit" edge="start" sx={{ mr: 0 }}>
-              <MenuIcon />
-            </IconButton>
-            <img
-              src="https://hcmut.edu.vn/img/nhanDienThuongHieu/01_logobachkhoatoi.png"
-              alt="HCMUT Logo"
-              style={{ width: '100px', marginRight: '20px' }}
-            />
-            <Typography variant="h3" sx={{ flexGrow: 1, fontSize: '30px' }}>
-              Student
-            </Typography>
-
-            <Button
-              color="inherit"
-              sx={{ marginLeft: '60px', fontSize: '20px', marginRight: '30px' }}
-              onClick={() => handleNavigation('/student-dashboard')}
-            >
-              Trang chủ
-            </Button>
-            <Button
-              color="inherit"
-              sx={{ fontSize: '20px', marginRight: '30px' }}
-              onClick={() => handleNavigation('/print')}
-            >
-              In tài liệu
-            </Button>
-            <Button
-              color="inherit"
-              sx={{ fontSize: '20px', marginRight: '30px' }}
-              onClick={() => handleNavigation('/history')}
-            >
-              Lịch sử in
-            </Button>
-            <Button
-              color="inherit"
-              sx={{ fontSize: '20px', marginRight: '30px' }}
-              onClick={() => handleNavigation('/purchase')}
-            >
-              Thanh toán
-            </Button>
-          </Box>
-
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="body1" sx={{ marginRight: '15px', color: 'white', fontSize: '16px' }}>
-              {userName || 'Người dùng'}
-            </Typography>
-            <Avatar src={userAvatar} sx={{ marginRight: '15px' }} />
-            <Button color="inherit" sx={{ fontSize: '16px' }} onClick={handleLogout}>
-              Đăng xuất
-            </Button>
-          </Box>
-        </Toolbar>
-      </AppBar>
+      {/* Thanh điều hướng */}
+      <Navbar
+        title="Student"
+        menuItems={menuItems}
+        routes={routes}
+        active={"Trang chủ"}
+      />
 
       <Box
         sx={{

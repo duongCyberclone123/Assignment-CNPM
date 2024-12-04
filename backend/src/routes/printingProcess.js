@@ -106,4 +106,5 @@ router.post('/Printing',studentController.Printing)
 router.get('/viewHistoryLog',studentController.ViewHistoryLog)
 router.post('/buyPage', studentController.purchasePaper)
 router.post('/viewLog', ViewHistoryLog)
+router.post('/report',studentController.makeReport)
 module.exports = router

@@ -5,7 +5,7 @@ import axios from "axios";
 import Navbar from "../../components/Navbar";
 const PrintPurchasePage = () => {
     const menuItems = ['Trang chủ', 'In tài liệu', 'Lịch sử in', 'Mua trang in'];
-    const routes = ['/home', '/print', '/history', '/purchase'];
+    const routes = ['/student-dashboard', '/print', '/history', '/purchase'];
 
     const [paperCount, setPaperCount] = useState("");
     const [paymentMethod, setPaymentMethod] = useState("");
@@ -59,9 +59,8 @@ const PrintPurchasePage = () => {
         if (validate()) {
             setSuccessModalOpen(true);
             const res = await axios.post("http://localhost:8000/api/printing/buyPage",
-                { sid: localStorage.getItem("ID"), numbersOfPages: paperCount, PMmethod: paymentMethod, }
+                { sid: JSON.parse(localStorage.getItem("userData")).ID, numbersOfPages: paperCount, PMmethod: paymentMethod, }
             )
-            console.log(res);
         }
     };
 

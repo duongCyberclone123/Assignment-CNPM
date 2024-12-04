@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,Grid,TextField, Button, Box, Container, Typography, List, ListItem, ListItemText,CircularProgress } from '@mui/material';
 import { getPrinters, addPrinter, updatePrinter, deletePrinter, getAllowedFileTypes, updateAllowedFileTypes } from '../services/printerService';
-import Navbar from "/components/spsonavbar";
+import Navbar from '../components/Navbar'
 import { useNavigate } from 'react-router-dom';
 
 const ManagePrinter = () => {
+  const menuItems = ['Trang chủ', 'Quản lí máy in', 'Quản lí lịch sử in', 'Báo cáo'];
+  const routes = ['/spsodashboard', '/manageprinter', '/spsohistory', '/report'];
   const navigate = useNavigate();
   const [allowedFileTypes, setAllowedFileTypes] = useState([]);
   const [printers, setPrinters] = useState([]); 
@@ -164,7 +166,12 @@ const ManagePrinter = () => {
       minHeight: '100vh', 
     }}
   >
-      <Navbar />
+      <Navbar
+                title="SPSO"
+                menuItems={menuItems}
+                routes={routes}
+                active={"Quản lí máy in"}
+            />
       <Box sx={{ marginTop: '80px' }}></Box>
       <Typography
         variant="h4"
