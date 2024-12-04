@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useState, useEffect, useRef } from 'react';
-import { Button, Dialog, DialogTitle, Box, LinearProgress, Typography } from "@mui/material";
+import { Button, Dialog, DialogTitle, Box, LinearProgress, Typography, TextField } from "@mui/material";
 import { useNavigate } from 'react-router-dom';
 
 import Navbar from '../../components/Navbar';
@@ -31,13 +31,16 @@ const Print = () => {
     const studentID = JSON.parse(localStorage.getItem("userData")).ID;
 
     const [loaddone, setLoaddone] = useState(false);
+    const [success, setSuccess] = useState(false);
     const [successModalOpen, setSuccessModalOpen] = useState(false);
     const handleCloseModal = () => {
         setSuccessModalOpen(false);
         navigate('/home');
     }
     // Rating
-    const [rating, setRating] = useState(0);  
+    const [ratingdialog, setRatingdialog] = useState(false);
+    const [rating, setRating] = useState(0);
+    const [comment, setComment] = useState('');
 
     const handleRating = (value) => {
         setRating(value);
@@ -117,7 +120,7 @@ const Print = () => {
                     isdoublesize: isDoubleside ? 1 : 0,
                     ishorizon: isHorizon ? 1 : 0,
                     iscoloring: isColor ? 1 : 0,
-                    tpagesize: pageSize,
+                    pagesize: pageSize,
                     tpages_per_copy: numOfPages,
                     tcopies: numberOfCopies,
                     pid: pID,
@@ -131,42 +134,37 @@ const Print = () => {
     }
     const doneTransition = async () => {
         try {
-            const responseMakeTran = await axios.post("http://localhost:8000/api/printing/Printing", {
-                params: {
-                    pid: pID
-                }
-            });
+            const responseMakeTran = await axios.post("http://localhost:8000/api/printing/Printing", null, { params: { pid: pID } });
         } catch (error) {
             console.error("Error while upload document", error.message);
         }
     }
     // loading box
     const [progress, setProgress] = useState(0); // Trạng thái cho tiến trình
-    useEffect(() => {
-        if (progress === 100) {
-            setLoaddone(true); // Đánh dấu là tải xong
-        }
-    }, [progress])
     const timerRef = useRef(null); // Lưu trữ ID của timer
 
     const startLoad = () => {
         setProgress(0);
-        setLoaddone(false);
-
-        // Hủy bỏ interval cũ nếu có
-        if (timerRef.current) {
-            clearInterval(timerRef.current);
-        }
-
-        // Tạo interval mới và lưu ID vào useRef
-        timerRef.current = setInterval(() => {
-            setProgress((prevProgress) =>
-                prevProgress < 100 ? prevProgress + 1 : 100
-            );
-        }, 50); // Cập nhật mỗi 50ms
-
-        doneTransition();
+        return new Promise((resolve) => {
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+            }
+            timerRef.current = setInterval(() => {
+                setProgress((prevProgress) => {
+                    if (prevProgress < 100) {
+                        return prevProgress + 1;
+                    } else {
+                        clearInterval(timerRef.current);
+                        resolve();
+                        setLoaddone(true);
+                        setSuccess(true);
+                        return 100;
+                    }
+                });
+            }, 50);
+        });
     };
+
 
     return (<>
         <style>
@@ -212,7 +210,11 @@ const Print = () => {
                                 await uploadFile();
                                 await makeTransition();
                                 setSuccessModalOpen(true);
-                                startLoad();
+                                setSuccess(false);
+                                setLoaddone(false);
+                                setRatingdialog(false);
+                                await startLoad();
+                                doneTransition();
                             }}
                         >
                             PRINT
@@ -269,7 +271,7 @@ const Print = () => {
                 </Box>
             )}
 
-            {loaddone && (
+            {success && (
                 <Box
                     sx={{
                         display: "flex",
@@ -310,34 +312,103 @@ const Print = () => {
                     >
                         Tài liệu của bạn sẽ được in. Nếu có sự cố gì hãy liên hệ với chúng tôi để có thể được phản hồi và giải quyết.
                     </DialogTitle>
+                    <Box sx={{
+                        display: "flex",
+                        flexDirection: 'row',
+                        gap: "10px"
+                    }}>
+                        <Button
+                            variant="contained"
+                            color="error"
+                            sx={{
+                                marginTop: "20px",  // Đặt khoảng cách cho nút
+                                padding: "5px 10px",
+                                fontSize: "16px",
+                            }}
+                            onClick={() => {
+                                handleCloseModal();
+                            }}
+                        >
+                            Bỏ qua
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            sx={{
+                                marginTop: "20px",  // Đặt khoảng cách cho nút
+                                padding: "5px 10px",
+                                fontSize: "16px",
+                            }}
+                            onClick={() => {
+                                setSuccess(false);
+                                setRatingdialog(true);
+                            }}
+                        >
+                            Đánh giá
+                        </Button>
+                    </Box>
                 </Box>
             )}
+            {ratingdialog &&
+                <div style={{ textAlign: 'center', padding: '20px', width: "543.2px" }}>
+                    <h2>Đánh giá của bạn</h2>
+                    <div style={{ fontSize: '2rem' }}>
+                        {[1, 2, 3, 4, 5].map((star) => (
+                            <span
+                                key={star}
+                                style={{
+                                    cursor: 'pointer',
+                                    color: star <= rating ? '#ffd700' : '#ccc',
+                                }}
+                                onClick={() => handleRating(star)}
+                            >
+                                ★
+                            </span>
+                        ))}
+                    </div>
+                    <div style={{ marginTop: '20px' }}>
+                        <TextField
+                            label="Bình luận"
+                            variant="outlined"
+                            fullWidth
+                            multiline
+                            rows={4}
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
+                            sx={{ maxWidth: '500px', marginTop: '10px' }}
+                        />
+                    </div>
+                    <Button
+                        variant="contained"
+                        color="success"
+                        sx={{
+                            marginTop: "20px",  // Đặt khoảng cách cho nút
+                            padding: "5px 10px",
+                            fontSize: "16px",
+                        }}
+                        onClick={async () => {
+                            await axios.post("http://localhost:8000/api/printing/report",
+                                {
+                                    comment: comment,
+                                    rate: rating,
+                                },
+                                {
+                                    params: {
+                                        sid: studentID,
+                                    }
+                                }
+                            )
+                            setRating(0)
+                            setComment("")
+                            handleCloseModal();
+                        }}
+                    >
+                        Gửi
+                    </Button>
+                </div>
+            }
         </Dialog>
 
-
-        <div style={{ textAlign: 'center', padding: '20px' }}>
-            <h2>Đánh giá của bạn</h2>
-
-            {/* Hiển thị các sao */}
-            <div style={{ fontSize: '2rem' }}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                    <span
-                        key={star}
-                        style={{
-                            cursor: 'pointer',
-                            color: star <= rating ? '#ffd700' : '#ccc',
-                        }}
-                        onClick={() => handleRating(star)}
-                    >
-                        ★
-                    </span>
-                ))}
-            </div>
-            
-            <div>
-                <p>{rating ? `Bạn đã chọn ${rating} sao` : 'Chọn số sao để đánh giá'}</p>
-            </div>
-        </div>
     </>
     );
 }

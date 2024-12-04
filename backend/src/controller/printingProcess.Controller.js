@@ -1,11 +1,12 @@
+const { query } = require('express');
 const StudentService = require('../../database/StudentService')
 const PRICE_PER_PAGE = 500;
-class StudentController{
+class StudentController {
     //Buy pages
-    purchasePaper = async function(req, res) {
+    purchasePaper = async function (req, res) {
         try {
             const { sid, numbersOfPages, PMmethod } = req.body;
-    
+
             // Kiểm tra dữ liệu đầu vào
             if (!sid || !numbersOfPages || !PMmethod) {
                 return res.status(400).json({
@@ -15,7 +16,7 @@ class StudentController{
                 });
             }
             const pagesPurchased = numbersOfPages * 500;
-    
+
             // Gọi dịch vụ
             const result = await StudentService.buyPaper(sid, pagesPurchased, PMmethod);
             res.status(result.status).json(result);
@@ -30,8 +31,8 @@ class StudentController{
     }
 
     // View History Log
-    async ViewHistoryLog(req, res){
-        try{
+    async ViewHistoryLog(req, res) {
+        try {
             const studentID = req.query.sid
             if (!studentID) return res.status(400).json({
                 status: 400,
@@ -45,7 +46,7 @@ class StudentController{
                 data: log
             })
         }
-        catch(err){
+        catch (err) {
             return res.status(404).json({
                 status: 404,
                 msg: err,
@@ -54,19 +55,19 @@ class StudentController{
         }
     }
     // Printing Process
-    async uploadFile(req, res){
+    async uploadFile(req, res) {
         try {
             const studentID = req.query.uid
             console.log(studentID)
-            const {dname, dsize, dformat, dpage_num} = req.body
-            if (!dname || !dsize || !dformat || !dpage_num ) {
+            const { dname, dsize, dformat, dpage_num } = req.body
+            if (!dname || !dsize || !dformat || !dpage_num) {
                 return res.status(400).json({
                     status: 400,
                     msg: 'Fail uploading file',
                     data: null
                 })
             }
-            const response = await StudentService.uploadFile(studentID,req.body)
+            const response = await StudentService.uploadFile(studentID, req.body)
             console.log(response)
             return res.status(200).json(response)
         }
@@ -79,15 +80,15 @@ class StudentController{
         }
     }
 
-    async PrintersInLocation(req, res){
-        try{
+    async PrintersInLocation(req, res) {
+        try {
             console.log(req.query)
-            const {place, building, room} = req.query
-            const response = await StudentService.sortPrintersByLocation(place,building,room)
+            const { place, building, room } = req.query
+            const response = await StudentService.sortPrintersByLocation(place, building, room)
             console.log(response)
             return res.status(200).json(response)
         }
-        catch(err){
+        catch (err) {
             return res.status(404).json({
                 status: 404,
                 msg: err,
@@ -96,12 +97,12 @@ class StudentController{
         }
     }
 
-    async receivePrintingRequest(req,res){
-        try{
+    async receivePrintingRequest(req, res) {
+        try {
             const response = await StudentService.receivePrintingRequest(req.body)
             return res.status(200).json(response)
         }
-        catch(err){
+        catch (err) {
             return res.status(404).json({
                 status: 404,
                 msg: err,
@@ -110,8 +111,8 @@ class StudentController{
         }
     }
 
-    async Printing(req,res){
-        try{
+    async Printing(req, res) {
+        try {
             const printerID = req.query.pid
             if (!printerID) {
                 return res.status(400).json({
@@ -127,7 +128,26 @@ class StudentController{
                 data: result
             });
         }
-        catch(err){
+        catch (err) {
+            return res.status(404).json({
+                status: 404,
+                msg: err,
+                data: null
+            })
+        }
+    }
+
+    async makeReport(req, res) {
+        try {
+            const studentID = req.query
+            const result = await StudentService.createReport(studentID, req.body)
+            console.log(result);
+            return res.status(200).json({
+                status: 200,
+                msg: 'Send report successfully',
+                data: result
+            });
+        } catch (err) {
             return res.status(404).json({
                 status: 404,
                 msg: err,

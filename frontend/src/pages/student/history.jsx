@@ -49,6 +49,7 @@ const History = () => {
                     params: { sid: sID },
                 });
 
+
                 if (response.status === 200) {
                     setHistoryData(response.data.data.data);
                 }
@@ -57,6 +58,7 @@ const History = () => {
             }
         };
         run();
+
 
     }, []);
 

@@ -11,6 +11,7 @@ const PrinterList = ({ onChangeValue }) => {
     const [printers, setPrinters] = useState([]);
     // Chon may
     const [selectedPrinter, setSelectedPrinter] = useState(null);
+    const [selectedIndex, setSelectedIndex] = useState(-1);
     // Cho moral
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
