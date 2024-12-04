@@ -2,15 +2,15 @@ import React, { useEffect, useState } from "react";
 import { Box, Button, Typography, Modal, Card, CardContent, Grid, TextField, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import axios from 'axios';
 
-import PR from "../assets/printer.png"; // Path to the printer image
-import printerView from "../assets/printerView.png"; // Path to the printer image
+import PR from "../assets/printer.png";
+import printerView from "../assets/printerView.png";
+import search from "../assets/search.png";
 
 const PrinterList = ({ onChangeValue }) => {
     // thong tin tra ve tu api
     const [printers, setPrinters] = useState([]);
     // Chon may
     const [selectedPrinter, setSelectedPrinter] = useState(null);
-    const [selectedIndex, setSelectedIndex] = useState(-1);
     // Cho moral
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
@@ -19,6 +19,11 @@ const PrinterList = ({ onChangeValue }) => {
         setOpen(false);
 
     };
+
+    const [Base, setBase] = useState("");
+    const [Building, setBuilding] = useState("");
+    const [Room, setRoom] = useState("");
+
 
     const selectPrinter = (printer) => {
         setSelectedPrinter(printer);
@@ -39,6 +44,25 @@ const PrinterList = ({ onChangeValue }) => {
 
         fetchPrinters();
     }, []);
+
+    const getPrinter = async () => {
+        try {
+            console.log({ Base, Building, Room, });
+            const response = await axios.get("http://localhost:8000/api/printing/getPrinters", {
+                params: {
+                    place: Base,
+                    building: Building,
+                    room: Room
+                }
+            });
+            
+            if (response.status === 200) {
+                setPrinters(response.data.data);
+            }
+        } catch (error) {
+            console.error("Error while fetching printers:", error.message);
+        }
+    };
 
 
     return (
@@ -92,10 +116,145 @@ const PrinterList = ({ onChangeValue }) => {
                 >
 
 
-                    <Typography variant="h6">
-                        Select Printer
-                    </Typography>
+                    <Box
+                        sx={{
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                            marginBottom: "10px",
+                        }}
+                    >
+                        <Typography variant="h6">
+                            Chọn máy in
+                        </Typography>
 
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                flex: "1",
+                                justifyContent: "right",
+                                gap: "20px"
+                            }}
+                        >
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    justifyContent: "space-between",
+                                    gap: "10px"
+                                }}
+                            >
+                                <Typography variant="h7" sx={{ alignContent: "center", width: "70px" }}>
+                                    Cơ sở
+                                </Typography>
+
+
+                                <input
+                                    type="text"
+                                    style={{
+
+                                        padding: "10px",
+                                        border: "1px solid #ccc",
+                                        borderRadius: "8px",
+                                        fontSize: "14px",
+                                        outline: "none",
+                                        backgroundColor: "#fff",
+                                        transition: "border-color 0.3s ease",
+                                        maxWidth: "200px",
+                                        width: "100%"
+                                    }}
+                                    onChange={(e) => {
+                                        setBase(e.target.value);
+                                    }}
+                                    onFocus={(e) => (e.target.style.borderColor = "#1976d2")}
+                                    onBlur={(e) => (e.target.style.borderColor = "#ccc")}
+                                />
+                            </Box>
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    justifyContent: "right",
+                                    gap: "10px"
+                                }}
+                            >
+                                <Typography variant="h7" sx={{ alignContent: "center", }}>
+                                    Tòa
+                                </Typography>
+                                <input
+                                    type="text"
+                                    style={{
+
+                                        padding: "10px",
+                                        border: "1px solid #ccc",
+                                        borderRadius: "8px",
+                                        fontSize: "14px",
+                                        outline: "none",
+                                        backgroundColor: "#fff",
+                                        transition: "border-color 0.3s ease",
+                                        maxWidth: "200px",
+                                        width: "100%"
+                                    }}
+                                    onChange={(e) => {
+                                        setBuilding(e.target.value);
+                                    }}
+                                    onFocus={(e) => (e.target.style.borderColor = "#1976d2")}
+                                    onBlur={(e) => (e.target.style.borderColor = "#ccc")}
+                                />
+                            </Box>
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    justifyContent: "right",
+                                    gap: "10px"
+                                }}
+                            >
+                                <Typography variant="h7" sx={{ alignContent: "center", }}>
+                                    Phòng
+                                </Typography>
+                                <input
+                                    type="text"
+                                    style={{
+
+                                        padding: "10px",
+                                        border: "1px solid #ccc",
+                                        borderRadius: "8px",
+                                        fontSize: "14px",
+                                        outline: "none",
+                                        backgroundColor: "#fff",
+                                        transition: "border-color 0.3s ease",
+                                        maxWidth: "200px",
+                                        width: "100%"
+                                    }}
+                                    onChange={(e) => {
+                                        setRoom(e.target.value);
+                                    }}
+                                    onFocus={(e) => (e.target.style.borderColor = "#1976d2")}
+                                    onBlur={(e) => (e.target.style.borderColor = "#ccc")}
+                                />
+                            </Box>
+
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={getPrinter}
+                                sx={{
+                                    height: "100%",
+                                    backgroundColor: "white",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    color: "black",
+                                    border: "brown",
+                                    borderRadius: "8px",
+                                    padding: "0",
+                                }}
+                            >
+                                <img src={search} style={{ width: "17px" }} />
+                            </Button>
+                        </Box>
+                    </Box>
                     <Grid container spacing={2}>
                         {printers && printers.map((printer) => (
                             <Grid item xs={12} sm={6} md={4} lg={3} key={printer.PID}>
@@ -112,7 +271,6 @@ const PrinterList = ({ onChangeValue }) => {
                                     }}
                                     onClick={() => {
                                         selectPrinter(printer);
-                                        selectedIndex(index);
                                     }}
                                 >
                                     {/* Printer Image */}
@@ -201,7 +359,7 @@ const PrinterList = ({ onChangeValue }) => {
                 >
                     {selectedPrinter?.Pname + ' (' + selectedPrinter?.Pmodel + ')'}
                 </Typography>
-                <Typography variant="body2" sx={{ justifySelf: "flex-start"}}>ID: {selectedPrinter?.PID}</Typography>
+                <Typography variant="body2" sx={{ justifySelf: "flex-start" }}>ID: {selectedPrinter?.PID}</Typography>
                 <Typography variant="body2" sx={{ justifySelf: "flex-start" }}>
                     <strong>Base:</strong> {selectedPrinter?.Pfacility}
                 </Typography>

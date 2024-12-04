@@ -33,13 +33,12 @@ class StudentController{
     async ViewHistoryLog(req, res){
         try{
             const studentID = req.query.sid
-            const {printerID, startTime, endTime} = req.body
             if (!studentID) return res.status(400).json({
                 status: 400,
                 msg: "Please Login",
                 data: null
             })
-            const log = await StudentService.listAllPrintingLog(studentID, req.body);
+            const log = await StudentService.listAllPrintingLog(studentID, req.query);
             return res.status(200).json({
                 status: 200,
                 msg: "View Log",
@@ -82,8 +81,8 @@ class StudentController{
 
     async PrintersInLocation(req, res){
         try{
-            console.log(req.body)
-            const {place, building, room} = req.body
+            console.log(req.query)
+            const {place, building, room} = req.query
             const response = await StudentService.sortPrintersByLocation(place,building,room)
             console.log(response)
             return res.status(200).json(response)

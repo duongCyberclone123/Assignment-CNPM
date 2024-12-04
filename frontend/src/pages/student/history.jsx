@@ -3,7 +3,8 @@ import { Box, Card, CardContent, Typography, Grid, Button, MenuItem, Select, For
 import Navbar from '../../components/Navbar'
 
 import time from '../../assets/time.png';
-import location from '../../assets/location.png';
+import search from "../../assets/search.png";
+
 import axios from 'axios';
 
 const History = () => {
@@ -12,6 +13,12 @@ const History = () => {
 
 
     const [historyData, setHistoryData] = useState([]);
+
+    const [printerID, setPrinterID] = useState("");
+    const [startTime, setStartTime] = useState("");
+    const [endTime, setEndTime] = useState("");
+
+    const sID = JSON.parse(localStorage.getItem("userData")).ID;
 
 
     function formatTimeRange(startTime, endTime) {
@@ -38,7 +45,6 @@ const History = () => {
     useEffect(() => {
         const run = async () => {
             try {
-                const sID =JSON.parse(localStorage.getItem("userData")).ID;
                 const response = await axios.get("http://localhost:8000/api/printing/viewHistoryLog", {
                     params: { sid: sID },
                 });
@@ -54,6 +60,38 @@ const History = () => {
 
     }, []);
 
+    const getHistory = async () => {
+        try {
+            const params = {
+                sid: sID,
+            };
+            const formatDate = (dateString) => {
+                if (!dateString) return null;
+                const [day, month, year] = dateString.split("-");
+                return `${year}-${month}-${day} 00:00:00`;
+            };
+    
+            if (startTime) {
+                params.startTime = formatDate(startTime);
+            }
+            if (endTime) {
+                params.endTime = formatDate(endTime);
+            }
+            if (printerID) {
+                params.endTime = endTime;
+                params.pid = parseInt(printerID);
+            }
+
+            const response = await axios.get("http://localhost:8000/api/printing/viewHistoryLog", { params });
+            if (response.status === 200) {
+                setHistoryData(response.data.data.data);
+            }
+        } catch (error) {
+            console.error("Error while fetching history:", error.message);
+        }
+    };
+
+
     const getBackgroundColor = (status) => {
         switch (status) {
             case 'pending':
@@ -68,40 +106,6 @@ const History = () => {
     };
 
 
-    const [sortOption, setSortOption] = useState('Tstart_time'); // mặc định sắp xếp theo thời gian
-    const [sortOrder, setSortOrder] = useState('desc'); // mặc định sắp xếp giảm dần
-
-    const handleSortChange = (option) => {
-        setSortOption(option);
-        sortData(option, sortOrder);
-    };
-
-    const handleSortOrderChange = (order) => {
-        setSortOrder(order);
-        sortData(sortOption, order);
-    };
-
-    // Hàm sắp xếp
-    const sortData = (option, order) => {
-        const sortedData = [...historyData];
-        switch (option) {
-            case 'Tpages_per_copy':
-                sortedData.sort((a, b) => order === 'asc' ? a.Tpages_per_copy - b.Tpages_per_copy : b.Tpages_per_copy - a.Tpages_per_copy);
-                break;
-            case 'Tcopies':
-                sortedData.sort((a, b) => order === 'asc' ? a.Tcopies - b.Tcopies : b.Tcopies - a.Tcopies);
-                break;
-            case 'status':
-                sortedData.sort((a, b) => order === 'asc' ? a.Tstatus.localeCompare(b.Tstatus) : b.Tstatus.localeCompare(a.Tstatus));
-                break;
-            case 'Tstart_time':
-                sortedData.sort((a, b) => order === 'asc' ? new Date(a.Tstart_time) - new Date(b.Tstart_time) : new Date(b.Tstart_time) - new Date(a.Tstart_time));
-                break;
-            default:
-                break;
-        }
-        setHistoryData(sortedData);
-    };
     return (
         <>{/* Đặt lại margin và padding của html, body */}
             <style>
@@ -131,48 +135,119 @@ const History = () => {
                     You have printed <span style={{ color: "#1E90FF" }}>{historyData.length}</span> times!
                 </h2>
 
-                {/* Sort Section */}
-                <div
-                    style={{
+                <Box
+                    sx={{
                         display: "flex",
                         flexDirection: "row",
-                        alignItems: "center",
-                        gap: "15px",
-                        padding: "15px 0",
+                        flex: "1",
+                        justifyContent: "right",
+                        gap: "20px"
                     }}
                 >
-                    <p style={{ fontSize: "18px", fontWeight: "bold", margin: 0 }}>Sort:</p>
 
-                    {/* Sort by Dropdown */}
-                    <FormControl variant="outlined" sx={{ minWidth: 150 }}>
-                        <InputLabel id="sort-by-label">Sort by</InputLabel>
-                        <Select
-                            labelId="sort-by-label"
-                            value={sortOption}
-                            onChange={(e) => handleSortChange(e.target.value)}
-                            label="Sort by"
-                        >
-                            <MenuItem value="Tstart_time">Time</MenuItem>
-                            <MenuItem value="Tpages_per_copy">Pages per Copy</MenuItem>
-                            <MenuItem value="Tcopies">Copies</MenuItem>
-                            <MenuItem value="status">Status</MenuItem>
-                        </Select>
-                    </FormControl>
+                    <Box
+                        sx={{
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "right",
+                            gap: "10px"
+                        }}
+                    >
+                        <Typography variant="h7" sx={{ alignContent: "center", }}>
+                            ID máy in
+                        </Typography>
+                        <input
+                            type="text"
+                            style={{
+                                padding: "10px",
+                                border: "1px solid #ccc",
+                                borderRadius: "8px",
+                                fontSize: "14px",
+                                outline: "none",
+                                backgroundColor: "#fff",
+                                transition: "border-color 0.3s ease",
+                                maxWidth: "150px",
+                                width: "100%"
+                            }}
+                            onChange={(e) => {
+                                setPrinterID(e.target.value);
+                            }}
+                            onFocus={(e) => (e.target.style.borderColor = "#1976d2")}
+                            onBlur={(e) => (e.target.style.borderColor = "#ccc")}
+                        />
+                    </Box>
+                    <Box
+                        sx={{
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "right",
+                            gap: "10px"
+                        }}
+                    >
+                        <Typography variant="h7" sx={{ alignContent: "center", }}>
+                            Khoảng thời gian
+                        </Typography>
+                        <input
+                            type="text"
+                            placeholder="From (dd-mm-yyyy)"
+                            style={{
 
-                    {/* Sort Order Dropdown */}
-                    <FormControl variant="outlined" sx={{ minWidth: 150 }}>
-                        <InputLabel id="sort-order-label">Order</InputLabel>
-                        <Select
-                            labelId="sort-order-label"
-                            value={sortOrder}
-                            onChange={(e) => handleSortOrderChange(e.target.value)}
-                            // label="Order"
-                        >
-                            <MenuItem value="asc">Ascending</MenuItem>
-                            <MenuItem value="desc">Descending</MenuItem>
-                        </Select>
-                    </FormControl>
-                </div>
+                                padding: "10px",
+                                border: "1px solid #ccc",
+                                borderRadius: "8px",
+                                fontSize: "14px",
+                                outline: "none",
+                                backgroundColor: "#fff",
+                                transition: "border-color 0.3s ease",
+                                maxWidth: "150px",
+                                width: "100%"
+                            }}
+                            onChange={(e) => {
+                                setStartTime(e.target.value);
+                            }}
+                            onFocus={(e) => (e.target.style.borderColor = "#1976d2")}
+                            onBlur={(e) => (e.target.style.borderColor = "#ccc")}
+                        />
+                        <input
+                            type="text"
+                            placeholder="To (dd-mm-yyyy)"
+                            style={{
+                                padding: "10px",
+                                border: "1px solid #ccc",
+                                borderRadius: "8px",
+                                fontSize: "14px",
+                                outline: "none",
+                                backgroundColor: "#fff",
+                                transition: "border-color 0.3s ease",
+                                maxWidth: "150px",
+                                width: "100%"
+                            }}
+                            onChange={(e) => {
+                                setEndTime(e.target.value);
+                            }}
+                            onFocus={(e) => (e.target.style.borderColor = "#1976d2")}
+                            onBlur={(e) => (e.target.style.borderColor = "#ccc")}
+                        />
+                    </Box>
+
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={getHistory}
+                        sx={{
+                            height: "100%",
+                            backgroundColor: "white",
+                            display: "flex",
+                            flexDirection: "column",
+                            color: "black",
+                            border: "brown",
+                            borderRadius: "8px",
+                            padding: "5px 0",
+                        }}
+                    >
+                        <img src={search} style={{ width: "29px" }} />
+                    </Button>
+                </Box>
             </div>
 
             <Box
@@ -228,6 +303,9 @@ const History = () => {
                                             marginBottom: '8px',
                                         }}
                                     >
+                                        <Typography variant="body2">
+                                            <strong>PrinterID:</strong> {item.PID}
+                                        </Typography>
                                         <Typography variant="body2">
                                             <strong>Pages:</strong> {item.Tpages_per_copy}
                                         </Typography>
