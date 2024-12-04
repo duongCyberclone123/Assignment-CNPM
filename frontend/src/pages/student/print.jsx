@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useState, useEffect,useRef  } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button, Dialog, DialogTitle, Box, LinearProgress, Typography } from "@mui/material";
 import { useNavigate } from 'react-router-dom';
 
@@ -10,6 +10,8 @@ import PrinterList from '../../components/Printerlist';
 import checked from "../../assets/checked.png";
 
 const Print = () => {
+    const navigate = useNavigate();
+
     const menuItems = ['Trang chủ', 'In tài liệu', 'Lịch sử in', 'Mua trang in'];
     const routes = ['/home', '/print', '/history', '/purchase'];
     const [seFile, setSeFile] = useState(false);
@@ -34,7 +36,12 @@ const Print = () => {
         setSuccessModalOpen(false);
         navigate('/home');
     }
+    // Rating
+    const [rating, setRating] = useState(0);  
 
+    const handleRating = (value) => {
+        setRating(value);
+    };
 
     const handleFileConfigure = (id, value) => {
         switch (id) {
@@ -122,6 +129,17 @@ const Print = () => {
             console.error("Error while upload document", error.message);
         }
     }
+    const doneTransition = async () => {
+        try {
+            const responseMakeTran = await axios.post("http://localhost:8000/api/printing/Printing", {
+                params: {
+                    pid: pID
+                }
+            });
+        } catch (error) {
+            console.error("Error while upload document", error.message);
+        }
+    }
     // loading box
     const [progress, setProgress] = useState(0); // Trạng thái cho tiến trình
     useEffect(() => {
@@ -132,20 +150,22 @@ const Print = () => {
     const timerRef = useRef(null); // Lưu trữ ID của timer
 
     const startLoad = () => {
-      setProgress(0);
-      setLoaddone(false);
-      
-      // Hủy bỏ interval cũ nếu có
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-  
-      // Tạo interval mới và lưu ID vào useRef
-      timerRef.current = setInterval(() => {
-        setProgress((prevProgress) =>
-          prevProgress < 100 ? prevProgress + 1 : 100
-        );
-      }, 50); // Cập nhật mỗi 50ms
+        setProgress(0);
+        setLoaddone(false);
+
+        // Hủy bỏ interval cũ nếu có
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+        }
+
+        // Tạo interval mới và lưu ID vào useRef
+        timerRef.current = setInterval(() => {
+            setProgress((prevProgress) =>
+                prevProgress < 100 ? prevProgress + 1 : 100
+            );
+        }, 50); // Cập nhật mỗi 50ms
+
+        doneTransition();
     };
 
     return (<>
@@ -294,6 +314,30 @@ const Print = () => {
             )}
         </Dialog>
 
+
+        <div style={{ textAlign: 'center', padding: '20px' }}>
+            <h2>Đánh giá của bạn</h2>
+
+            {/* Hiển thị các sao */}
+            <div style={{ fontSize: '2rem' }}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                    <span
+                        key={star}
+                        style={{
+                            cursor: 'pointer',
+                            color: star <= rating ? '#ffd700' : '#ccc',
+                        }}
+                        onClick={() => handleRating(star)}
+                    >
+                        ★
+                    </span>
+                ))}
+            </div>
+            
+            <div>
+                <p>{rating ? `Bạn đã chọn ${rating} sao` : 'Chọn số sao để đánh giá'}</p>
+            </div>
+        </div>
     </>
     );
 }
