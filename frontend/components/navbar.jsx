@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const navigate = useNavigate();
-
   const [userName, setUserName] = useState('');
   const [userAvatar, setUserAvatar] = useState('');
 

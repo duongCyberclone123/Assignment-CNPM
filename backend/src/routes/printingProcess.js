@@ -3,11 +3,11 @@ const router = express.Router();
 //const { body, param } = require('express-validator');
 const studentController = require('../controller/printingProcess.Controller');
 const authMiddleware = require('../middleware/authMiddleware');
-
+const client = require('../../database/database')
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const client = require('../../database/database')
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadDir = 'file/'; // Thư mục lưu trữ file
@@ -22,25 +22,25 @@ const storage = multer.diskStorage({
     }
 });
 const upload = multer({ storage: storage });
-
-async function listAllPrintingLog(Log){
+async function listAllPrintingLog(Log) {
     let query = 'SELECT * FROM TRANSACTION'
     let params = []
     if (Log.sid) {
-        query += ' WHERE SID = ?'
+        query += ' AND SID = ?'
         params.push(Log.sid)
     }
-
-    if (Log.sid && Log.pid){
+    if (Log.sid && Log.pid) {
+        
         query += ' AND PID = ?'
         params.push(Log.pid)
     }
-    else if (Log.pid) {
+    else if (Log.pid){
         query += ' WHERE PID = ?'
         params.push(Log.pid)
     }
 
     if (Log.pid && Log.startTime){
+        
         query += ' AND TSTART_TIME >= ?'
         params.push(Log.startTime)
     }
@@ -48,8 +48,9 @@ async function listAllPrintingLog(Log){
         query += ' WHERE TSTART_TIME >= ?'
         params.push(Log.startTime)
     }
-    
-    if (Log.startTime){
+
+
+    if (Log.startTime && Log.endTime){
         query += ' AND TEND_TIME <= ?'
         params.push(Log.endTime)
     }
@@ -78,7 +79,7 @@ async function listAllPrintingLog(Log){
             }
         );
     });
-}
+} 
 
 async function ViewHistoryLog(req, res){
     try{
@@ -97,7 +98,6 @@ async function ViewHistoryLog(req, res){
         })
     }
 }
-
 router.post('/uploadFile',upload.single('file'), studentController.uploadFile);
 router.get('/getPrinters',studentController.PrintersInLocation)
 //router.post('/processPrinting/:studentID/:docID',studentController.Printing)
