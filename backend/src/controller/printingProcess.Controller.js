@@ -136,6 +136,24 @@ class StudentController{
             })
         }
     }
+
+    async makeReport(req,res){
+        try{
+            const studentID = req.query
+            const result = await StudentService.createReport(studentID,req.body)
+            return res.status(200).json({
+                status: 200,
+                msg: 'Send report successfully',
+                data: result
+            });
+        }catch(err){
+            return res.status(404).json({
+                status: 404,
+                msg: err,
+                data: null
+            })
+        }
+    }
 }
 
 module.exports = new StudentController
