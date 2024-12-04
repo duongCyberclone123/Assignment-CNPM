@@ -1,7 +1,6 @@
 import axios from 'axios';
 import React, { useState, useEffect, useRef } from 'react';
 import { Button, Dialog, DialogTitle, Box, LinearProgress, Typography, TextField } from "@mui/material";
-import { useNavigate } from 'react-router-dom';
 
 import Navbar from '../../components/Navbar';
 import Calendar from '../../components/Calendar';
@@ -10,7 +9,6 @@ import PrinterList from '../../components/Printerlist';
 import checked from "../../assets/checked.png";
 
 const Print = () => {
-    const navigate = useNavigate();
 
     const menuItems = ['Trang chủ', 'In tài liệu', 'Lịch sử in', 'Mua trang in'];
     const routes = ['/home', '/print', '/history', '/purchase'];
@@ -35,7 +33,6 @@ const Print = () => {
     const [successModalOpen, setSuccessModalOpen] = useState(false);
     const handleCloseModal = () => {
         setSuccessModalOpen(false);
-        navigate('/home');
     }
     // Rating
     const [ratingdialog, setRatingdialog] = useState(false);
