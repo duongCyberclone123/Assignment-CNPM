@@ -50,9 +50,9 @@ const Navbar = () => {
             style={{ width: '100px', marginRight: '20px' }}
           />
           
-          {/* SPSS Title */}
+          {}
           <Typography variant="h3" sx={{ flexGrow: 1, fontSize: '30px' }}>
-            SPSS
+            Student
           </Typography>
 
           {/* Navigation Buttons */}

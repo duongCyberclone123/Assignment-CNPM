@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, Container, Typography, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
+import { TextField, Button, Box, Container, Typography, FormControl, Card, CardContent } from '@mui/material';
 import axios from 'axios';
-import Navbar from "/components/navbar"
-const PrintHistory = () => {
+import Navbar from "/components/spsonavbar";
+
+const SPSOHistoryLog = () => {
   const [studentId, setStudentId] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -15,25 +16,31 @@ const PrintHistory = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get('http://localhost:8000/api/prints/history', {
-        params: {
-          studentId,
-          startDate,
-          endDate,
-          printerId,
-        },
-      });
-      setHistory(response.data.data);
+      const requestBody = {
+        sid: studentId,
+        pid: printerId,
+        startDate: startDate,
+        endDate: endDate,
+      };
+      
+      const response = await axios.get('http://localhost:8000/api/printing/viewLog', { params: requestBody });
+  
+      if (response.data && response.data.data && response.data.data.data && Array.isArray(response.data.data.data)) {
+        setHistory(response.data.data.data);
+      } else {
+        setError('Dữ liệu trả về không hợp lệ.');
+      }
     } catch (err) {
       setError('Không thể lấy lịch sử in.');
     } finally {
       setLoading(false);
     }
   };
+  
 
   return (
     <Container>
-      <Navbar />  {/* Dùng lại thanh điều hướng ở đây */}
+      <Navbar />
       <Box sx={{ marginTop: '80px' }}></Box>
       <Typography variant="h4" gutterBottom>Lịch sử in</Typography>
 
@@ -45,6 +52,7 @@ const PrintHistory = () => {
             value={studentId}
             onChange={(e) => setStudentId(e.target.value)}
             fullWidth
+            sx={{ borderRadius: '8px' }}
           />
         </FormControl>
 
@@ -56,9 +64,8 @@ const PrintHistory = () => {
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             fullWidth
-            InputLabelProps={{
-              shrink: true,
-            }}
+            InputLabelProps={{ shrink: true }}
+            sx={{ borderRadius: '8px' }}
           />
         </FormControl>
 
@@ -70,9 +77,8 @@ const PrintHistory = () => {
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
             fullWidth
-            InputLabelProps={{
-              shrink: true,
-            }}
+            InputLabelProps={{ shrink: true }}
+            sx={{ borderRadius: '8px' }}
           />
         </FormControl>
 
@@ -83,6 +89,7 @@ const PrintHistory = () => {
             value={printerId}
             onChange={(e) => setPrinterId(e.target.value)}
             fullWidth
+            sx={{ borderRadius: '8px' }}
           />
         </FormControl>
 
@@ -91,6 +98,12 @@ const PrintHistory = () => {
           color="primary"
           onClick={fetchPrintHistory}
           fullWidth
+          sx={{
+            borderRadius: '8px',
+            '&:hover': {
+              backgroundColor: '#0056b3',
+            },
+          }}
         >
           Lấy lịch sử in
         </Button>
@@ -101,20 +114,34 @@ const PrintHistory = () => {
       {error && <Typography variant="body1" color="error">{error}</Typography>}
 
       <Box sx={{ marginTop: 3 }}>
-        <Typography variant="h6">Kết quả</Typography>
+        <Typography variant="h6" gutterBottom>Kết quả</Typography>
         <Box sx={{ marginTop: 2 }}>
           {history.length === 0 ? (
             <Typography variant="body1">Không có dữ liệu.</Typography>
           ) : (
-            <ul>
+            <div>
               {history.map((item, index) => (
-                <li key={index}>
-                  <Typography variant="body2">
-                    <strong>ID: </strong>{item.studentId} - <strong>Ngày: </strong>{new Date(item.date).toLocaleDateString()} - <strong>Printer: </strong>{item.printerId}
-                  </Typography>
-                </li>
+                <Card key={index} sx={{ marginBottom: 2, borderRadius: '8px' }}>
+                  <CardContent>
+                    <Typography variant="body1">
+                      <strong>TID:</strong> {item.TID} <br />
+                      <strong>Số trang mỗi bản sao:</strong> {item.Tpages_per_copy} <br />
+                      <strong>Số bản sao:</strong> {item.Tcopies} <br />
+                      <strong>Trạng thái:</strong> {item.Tstatus} <br />
+                      <strong>Kích thước trang:</strong> {item.Tpage_size} <br />
+                      <strong>Thời gian bắt đầu:</strong> {new Date(item.Tstart_time).toLocaleString()} <br />
+                      <strong>Thời gian kết thúc:</strong> {new Date(item.Tend_time).toLocaleString()} <br />
+                      <strong>Kích thước gấp đôi:</strong> {item.Tis_double_size ? 'Có' : 'Không'} <br />
+                      <strong>Horizon:</strong> {item.isHorizon ? 'Có' : 'Không'} <br />
+                      <strong>Màu sắc:</strong> {item.isColoring ? 'Có' : 'Không'} <br />
+                      <strong>SID (Student ID):</strong> {item.SID} <br />
+                      <strong>DID (Device ID):</strong> {item.DID} <br />
+                      <strong>PID (Printer ID):</strong> {item.PID}
+                    </Typography>
+                  </CardContent>
+                </Card>
               ))}
-            </ul>
+            </div>
           )}
         </Box>
       </Box>
@@ -122,4 +149,4 @@ const PrintHistory = () => {
   );
 };
 
-export default PrintHistory;
+export default SPSOHistoryLog;

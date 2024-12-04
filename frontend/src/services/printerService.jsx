@@ -26,32 +26,44 @@ export const addPrinter = async (printerData) => {
 
 // Hàm cập nhật thông tin máy in
 export const updatePrinter = async (pid, printerData) => {
-    try {
-      const response = await axios.put(`${API_URL}/update/${pid}`, printerData);
-      return response.data;  // Trả về dữ liệu từ API
-    } catch (error) {
-      console.error('Error updating printer:', error.response ? error.response.data : error.message);
-      throw error;  // Ném lỗi lên để xử lý ngoài
-    }
-  };
+  try {
+    const response = await axios.put(`${API_URL}/update?pid=${pid}`, printerData);
+    return response.data;  // Trả về dữ liệu từ API
+  } catch (error) {
+    console.error('Error updating printer:', error.response ? error.response.data : error.message);
+    throw error;  // Ném lỗi lên để xử lý ngoài
+  }
+};
   
 // Hàm xóa máy in
 export const deletePrinter = async (pid) => {
   try {
-    const response = await axios.delete(`${API_URL}/${pid}`); // Gửi DELETE request để xóa máy in
+    const response = await axios.delete(`${API_URL}?pid=${pid}`);  // Gửi DELETE request với tham số pid
     return response.data;  // Trả về kết quả xóa
   } catch (error) {
-    console.error('Error deleting printer:', error);
-    throw error;  // Ném lỗi lên
+    console.error('Error deleting printer:', error.response ? error.response.data : error.message);
+    throw error;  // Ném lỗi lên để xử lý ngoài
   }
 };
-// Hàm lấy lịch sử in
-export const viewLog = async () => {
+// Hàm GET để lấy các loại file được phép
+export const getAllowedFileTypes = async () => {
   try {
-    const response = await axios.get(API_URL/viewLog); // Gọi API lấy tất cả lịch sử máy in
-    return response.data;  
+    const response = await axios.get(`http://localhost:8000/api/system?config_key=allowed_file_types`);
+    return response.data;  // Trả về dữ liệu các loại file được phép
   } catch (error) {
-    console.error('Error fetching printers log:', error);
-    throw error;  
+    console.error('Error fetching allowed file types:', error.response ? error.response.data : error.message);
+    throw error;  // Ném lỗi lên để xử lý ngoài
+  }
+};
+// Hàm PUT để cập nhật các loại file được phép
+export const updateAllowedFileTypes = async (allowedFileTypes) => {
+  try {
+    const response = await axios.put(`http://localhost:8000/api/system/update?config_key=allowed_file_types`, {
+      allowed_file_types: allowedFileTypes  // Gửi các loại file mới vào body request
+    });
+    return response.data;  // Trả về kết quả cập nhật
+  } catch (error) {
+    console.error('Error updating allowed file types:', error.response ? error.response.data : error.message);
+    throw error;  // Ném lỗi lên để xử lý ngoài
   }
 };

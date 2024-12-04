@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Box, Container, Typography, List, ListItem, ListItemText } from '@mui/material';
-import { getPrinters, addPrinter, updatePrinter, deletePrinter } from '../services/printerService';
-import Navbar from "/components/navbar"
+import {  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,Grid,TextField, Button, Box, Container, Typography, List, ListItem, ListItemText,CircularProgress } from '@mui/material';
+import { getPrinters, addPrinter, updatePrinter, deletePrinter, getAllowedFileTypes, updateAllowedFileTypes } from '../services/printerService';
+import Navbar from "/components/spsonavbar";
+import { useNavigate } from 'react-router-dom';
+
 const ManagePrinter = () => {
-  const [printers, setPrinters] = useState([]); // Lưu trữ danh sách máy in
-  const [selectedPrinter, setSelectedPrinter] = useState(null); // Lưu trữ máy in đang được chọn
+  const navigate = useNavigate();
+  const [allowedFileTypes, setAllowedFileTypes] = useState([]);
+  const [printers, setPrinters] = useState([]); 
+  const [selectedPrinter, setSelectedPrinter] = useState(null); 
   const [name, setName] = useState('');
   const [model, setModel] = useState('');
   const [status, setStatus] = useState('');
@@ -13,25 +17,46 @@ const ManagePrinter = () => {
   const [room, setRoom] = useState('');
   const [maintenanceDate, setMaintenanceDate] = useState('');
   const [provideColoring, setProvideColoring] = useState('');
-  const [EID, setEID] = useState('');  // Thêm state cho EID
-  // Hàm điều hướng cho các mục trong thanh điều hướng
+  const [EID, setEID] = useState('');
+  const [loading, setLoading] = useState(false); 
+
   const handleNavigation = (path) => {
     navigate(path);
   };
-  // Hàm lấy danh sách máy in
+
   useEffect(() => {
     const fetchPrinters = async () => {
       try {
-        const result = await getPrinters();  // Gọi API để lấy danh sách máy in
-        setPrinters(result.data || []);  // Cập nhật state printers với kết quả từ API
+        const result = await getPrinters();
+        setPrinters(result.data || []);
       } catch (error) {
         console.error('Error fetching printers:', error);
       }
     };
-    fetchPrinters();  // Gọi hàm lấy danh sách máy in
-  }, []);  // Chỉ gọi khi component mount lần đầu tiên
+    
+    const fetchAllowedFileTypes = async () => {
+      try {
+        setLoading(true);
+        const response = await getAllowedFileTypes();  
+    
+        // Kiểm tra và tách config_value thành mảng nếu có giá trị
+        if (response.data && response.data.length > 0) {
+          const fileTypes = response.data[0].config_value.split(',').map(item => item.trim());
+          setAllowedFileTypes(fileTypes);
+        } else {
+          setAllowedFileTypes([]); // Nếu không có dữ liệu, trả về mảng rỗng
+        }
+      } catch (error) {
+        console.error('Lỗi khi tải các loại file cho phép', error);
+        setAllowedFileTypes([]); // Nếu có lỗi, cũng trả về mảng rỗng
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPrinters();
+    fetchAllowedFileTypes();
+  }, []);
 
-  // Hàm thêm máy in mới
   const handleAddPrinter = async () => {
     const printerData = { 
       Pname: name, 
@@ -41,12 +66,12 @@ const ManagePrinter = () => {
       Pbuilding: building, 
       Proom: room, 
       Pprovide_coloring: provideColoring, 
-      Plast_maintenance: maintenanceDate, // Đảm bảo ngày bảo trì cuối cùng được gửi đúng
-      EID: EID  // Sử dụng giá trị EID người dùng nhập
+      Plast_maintenance: maintenanceDate,
+      EID: EID  
     };
   
     try {
-      const result = await addPrinter(printerData);  // Gọi API để thêm máy in
+      const result = await addPrinter(printerData);
       alert('Máy in đã được thêm');
       setName('');
       setModel('');
@@ -55,17 +80,27 @@ const ManagePrinter = () => {
       setBuilding('');
       setRoom('');
       setProvideColoring('');
-      setEID('');  // Reset EID
-      setPrinters((prevPrinters) => [...prevPrinters, result.data]);  // Cập nhật state với máy in mới
+      setEID('');
+      setPrinters((prevPrinters) => [...prevPrinters, result.data]);
     } catch (error) {
       alert('Lỗi khi thêm máy in');
     }
   };
 
-  // Hàm cập nhật máy in
+  const handleSaveAllowedFileTypes = async () => {
+    try {
+      setLoading(true);
+      await updateAllowedFileTypes(allowedFileTypes);  // Cập nhật các loại file
+      alert('Các loại file đã được cập nhật');
+    } catch (error) {
+      alert('Lỗi khi cập nhật các loại file');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleEditPrinter = async () => {
     if (selectedPrinter && selectedPrinter.PID) {
-      // Tạo dữ liệu máy in để gửi đi
       const printerData = { 
         Pname: name, 
         Pmodel: model, 
@@ -73,29 +108,20 @@ const ManagePrinter = () => {
         Pfacility: facility, 
         Pbuilding: building, 
         Proom: room, 
-        Plast_maintenance: maintenanceDate, // Đảm bảo ngày bảo trì cuối cùng có định dạng "yyyy-mm-dd"
+        Plast_maintenance: maintenanceDate,
         Pprovide_coloring: provideColoring, 
-        EID: EID  // Cập nhật giá trị EID khi sửa máy in
+        EID: EID  
       };
   
       try {
-        // Gọi API để cập nhật máy in
         const result = await updatePrinter(selectedPrinter.PID, printerData);  
-        
-        // Thông báo khi cập nhật thành công
         alert('Máy in đã được cập nhật');
-        
-        // Cập nhật lại danh sách máy in sau khi cập nhật
         setPrinters((prevPrinters) =>
           prevPrinters.map((printer) =>
             printer.PID === selectedPrinter.PID ? { ...printer, ...printerData } : printer
           )
         );
-        
-        // Đặt lại selectedPrinter để chuẩn bị cho việc thêm máy in mới
         setSelectedPrinter(null);
-  
-        // Reset các trường nhập liệu
         setName('');
         setModel('');
         setStatus('');
@@ -106,16 +132,13 @@ const ManagePrinter = () => {
         setProvideColoring('');
         setEID('');
       } catch (error) {
-        // Thông báo lỗi khi không thể cập nhật máy in
         alert('Lỗi khi cập nhật máy in');
       }
     } else {
       alert('Vui lòng chọn máy in để cập nhật.');
     }
   };
-  
-  
-  // Hàm xóa máy in
+
   const handleDelete = async (pid) => {
     if (!pid || isNaN(pid)) {
       alert('Lỗi: PID không hợp lệ.');
@@ -123,24 +146,133 @@ const ManagePrinter = () => {
     }
   
     try {
-      await deletePrinter(pid);  // Gọi API để xóa máy in
+      await deletePrinter(pid);
       alert('Máy in đã được xóa');
-      setPrinters((prevPrinters) => prevPrinters.filter((printer) => printer.PID !== pid));  // Cập nhật lại danh sách máy in
+      setPrinters((prevPrinters) => prevPrinters.filter((printer) => printer.PID !== pid));
     } catch (error) {
       alert('Lỗi khi xóa máy in');
     }
   };
-  
 
   return (
-    <Container sx={{ padding: '20px' }}>
-        <Navbar />  {/* Dùng lại thanh điều hướng ở đây */}
-        <Box sx={{ marginTop: '80px' }}></Box>
+    <Container
+    sx={{
+      backgroundImage: 'url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8bjDr2_k6Lkdu1_RZuWAzNWt-MziZxXCU6A&s)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      minHeight: '100vh', 
+    }}
+  >
+      <Navbar />
+      <Box sx={{ marginTop: '80px' }}></Box>
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{
+          textAlign: 'center',
+          color: '#3f51b5',
+          fontFamily: 'Arial, sans-serif',
+        }}
+      >
+        Quản lý cấu hình hệ thống
+      </Typography>
+  
+      <Grid container spacing={2} sx={{ marginTop: 4 }}>
+      <Grid item xs={12} md={4}>
+  <Typography
+    variant="h5"
+    gutterBottom
+    sx={{
+      color: '#3f51b5',
+      fontFamily: 'Arial, sans-serif',
+    }}
+  >
+    Các loại file hiện tại:
+  </Typography>
+
+  {/* Hiển thị các loại file dưới dạng bảng */}
+  {loading ? (
+    <CircularProgress />
+  ) : allowedFileTypes.length > 0 ? (
+    <Table sx={{ minWidth: 650 }} aria-label="Các loại file hiện tại">
+      <TableHead>
+        <TableRow>
+          <TableCell sx={{ fontWeight: 'bold' }}>STT</TableCell>
+          <TableCell sx={{ fontWeight: 'bold' }}>Loại File</TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {allowedFileTypes.map((fileType, index) => (
+          <TableRow key={index}>
+            <TableCell>{index + 1}</TableCell>
+            <TableCell>{fileType.trim()}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  ) : (
+    <Typography variant="body1">Chưa có loại file nào được phép.</Typography>
+  )}
+</Grid>
+
+
+      {/* Cột giữa - Cập nhật các loại file */}
+      <Grid item xs={12} md={4}>
+        <Typography
+          variant="h5"
+          gutterBottom
+          sx={{
+            color: '#3f51b5',
+            fontFamily: 'Arial, sans-serif',
+          }}
+        >
+          Cập nhật các loại file được phép
+        </Typography>
+
+        {/* Trường nhập liệu để sửa các loại file */}
+        <TextField
+          label="Các loại file được phép (cách nhau bằng dấu phẩy)"
+          variant="outlined"
+          value={allowedFileTypes.join(', ')} // Hiển thị danh sách các loại file dưới dạng chuỗi
+          onChange={(e) =>
+            setAllowedFileTypes(
+              e.target.value.split(',').map((file) => file.trim())
+            ) // Cập nhật lại state khi người dùng thay đổi
+          }
+          fullWidth
+          sx={{ marginBottom: '16px', fontFamily: 'Arial, sans-serif' }}
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSaveAllowedFileTypes}
+          disabled={loading}
+          sx={{ marginTop: 2 }}
+        >
+          {loading ? <CircularProgress size={24} /> : 'Lưu các loại file'}
+        </Button>
+      </Grid>
+
+      {/* Cột bên phải - Ảnh */}
+      <Grid item xs={14} md={4} sx={{ display: 'flex', justifyContent: 'right' , paddingRight: '1px' }}>
+        <Box
+          component="img"
+          src="https://cdn.tgdd.vn/Files/2019/01/05/1142789/huong-dan-su-dung-may-in-khi-moi-mua-ve-12.jpg"
+          alt="Printer Guide"
+          sx={{
+            maxWidth: '80%',
+            height: 'auto',
+            borderRadius: '5px',
+          }}
+        />
+      </Grid>
+    </Grid>
+  
       <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', color: '#3f51b5' }}>
         Quản lý máy in
       </Typography>
-
-      {/* Form thêm hoặc sửa máy in */}
+  
       <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '600px', margin: '0 auto' }}>
         <TextField
           label="Tên máy in"
@@ -189,7 +321,7 @@ const ManagePrinter = () => {
           type="date"
           variant="outlined"
           value={maintenanceDate}
-          onChange={(e) => setMaintenanceDate(e.target.value)}  // Đảm bảo giá trị là kiểu "yyyy-mm-dd"
+          onChange={(e) => setMaintenanceDate(e.target.value)}
           fullWidth
         />
         <TextField
@@ -210,67 +342,64 @@ const ManagePrinter = () => {
           {selectedPrinter ? 'Cập nhật máy in' : 'Thêm máy in'}
         </Button>
       </Box>
-
-      {/* Danh sách máy in */}
+  
       <Typography variant="h5" gutterBottom sx={{ marginTop: 4, color: '#3f51b5' }}>
         Danh sách máy in
       </Typography>
       <List sx={{ backgroundColor: '#f5f5f5', borderRadius: '8px', padding: '10px' }}>
-  {printers.length === 0 ? (
-    <Typography variant="body1">Không có máy in nào</Typography>
-  ) : (
-    printers.map((printer) => (
-      <ListItem
-        key={printer.PID}
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          padding: '12px',
-          backgroundColor: '#fff',
-          marginBottom: '10px',
-          borderRadius: '8px',
-          boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-        }}
-      >
-        <ListItemText
-          primary={printer.Pname}
-          secondary={`Vị trí: ${printer.Pfacility}, ${printer.Pbuilding}, PID: ${printer.PID}`} // Hiển thị PID
-        />
-        <Box>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={() => {
-              setSelectedPrinter(printer);
-              setName(printer.Pname);
-              setModel(printer.Pmodel);
-              setStatus(printer.Pstatus);
-              setFacility(printer.Pfacility);
-              setBuilding(printer.Pbuilding);
-              setRoom(printer.Proom);
-              setMaintenanceDate(printer.Plast_maintenance.split('T')[0]); // Đảm bảo đúng định dạng yyyy-mm-dd
-              setProvideColoring(printer.Pprovide_coloring);
-              setEID(printer.EID); // Cập nhật giá trị EID khi sửa
-            }}
-          >
-            Sửa
-          </Button>
-          <Button
-            variant="outlined"
-            color="error"
-            onClick={() => handleDelete(printer.PID)}  // Truyền PID chính xác để xóa
-            sx={{ marginLeft: 2 }}
-          >
-            Xóa
-          </Button>
-        </Box>
-      </ListItem>
-    ))
-  )}
-</List>
-
+        {printers.length === 0 ? (
+          <Typography variant="body1">Không có máy in nào</Typography>
+        ) : (
+          printers.map((printer) => (
+            <ListItem
+              key={printer.PID}
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                padding: '12px',
+                backgroundColor: '#fff',
+                marginBottom: '10px',
+                borderRadius: '8px',
+                boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+              }}
+            >
+              <ListItemText
+                primary={printer.Pname}
+                secondary={`Vị trí: ${printer.Pfacility}, ${printer.Pbuilding}, PID: ${printer.PID}`}
+              />
+              <Box>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={() => {
+                    setSelectedPrinter(printer);
+                    setName(printer.Pname);
+                    setModel(printer.Pmodel);
+                    setStatus(printer.Pstatus);
+                    setFacility(printer.Pfacility);
+                    setBuilding(printer.Pbuilding);
+                    setRoom(printer.Proom);
+                    setMaintenanceDate(printer.Plast_maintenance.split('T')[0]);
+                    setProvideColoring(printer.Pprovide_coloring);
+                    setEID(printer.EID);
+                  }}
+                >
+                  Sửa
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={() => handleDelete(printer.PID)}
+                  sx={{ marginLeft: 2 }}
+                >
+                  Xóa
+                </Button>
+              </Box>
+            </ListItem>
+          ))
+        )}
+      </List>
     </Container>
   );
 };
-
 export default ManagePrinter;

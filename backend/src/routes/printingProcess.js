@@ -26,7 +26,7 @@ async function listAllPrintingLog(Log) {
     let query = 'SELECT * FROM TRANSACTION'
     let params = []
     if (Log.sid) {
-        query += ' AND SID = ?'
+        query += ' WHERE SID = ?'
         params.push(Log.sid)
     }
     if (Log.sid && Log.pid) {
@@ -105,5 +105,6 @@ router.post('/receivePrintingRequest',studentController.receivePrintingRequest)
 router.post('/Printing',studentController.Printing)
 router.get('/viewHistoryLog',studentController.ViewHistoryLog)
 router.post('/buyPage', studentController.purchasePaper)
-router.get('/viewLog', ViewHistoryLog)
+router.post('/viewLog', ViewHistoryLog)
+router.post('/report',studentController.makeReport)
 module.exports = router

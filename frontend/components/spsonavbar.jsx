@@ -52,7 +52,7 @@ const Navbar = () => {
           
           {/* SPSS Title */}
           <Typography variant="h3" sx={{ flexGrow: 1, fontSize: '30px' }}>
-            SPSS
+            SPSO
           </Typography>
 
           {/* Navigation Buttons */}
@@ -62,7 +62,7 @@ const Navbar = () => {
           <Button color="inherit" sx={{ fontSize: '20px', marginRight: '30px' }} onClick={() => handleNavigation('/manageprinter')}>
             Quản lí máy in
           </Button>
-          <Button color="inherit" sx={{ fontSize: '20px', marginRight: '30px' }} onClick={() => handleNavigation('/printhistory')}>
+          <Button color="inherit" sx={{ fontSize: '20px', marginRight: '30px' }} onClick={() => handleNavigation('/spsohistory')}>
             Lịch sử in
           </Button>
           <Button color="inherit" sx={{ fontSize: '20px', marginRight: '30px' }} onClick={() => handleNavigation('/report')}>

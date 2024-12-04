@@ -60,7 +60,7 @@ const SPSODashboard = () => {
               style={{ width: '100px', marginRight: '20px' }}
             />
             <Typography variant="h3" sx={{ flexGrow: 1, fontSize: '30px' }}>
-              SPSS
+              SPSO
             </Typography>
 
             <Button
@@ -80,7 +80,7 @@ const SPSODashboard = () => {
             <Button
               color="inherit"
               sx={{ fontSize: '20px', marginRight: '30px' }}
-              onClick={() => handleNavigation('/printhistory')}
+              onClick={() => handleNavigation('/spsohistory')}
             >
               Lịch sử in
             </Button>
