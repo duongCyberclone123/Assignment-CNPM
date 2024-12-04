@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Card, CardContent, Typography, Grid } from '@mui/material';
+import { Box, Card, CardContent, Typography, Grid, Button, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 import Navbar from '../../components/Navbar'
 
 import time from '../../assets/time.png';
@@ -11,7 +11,7 @@ const History = () => {
     const routes = ['/home', '/print', '/history', '/purchase'];
 
 
-    const [historyData, sethistoryData] = useState([]);
+    const [historyData, setHistoryData] = useState([]);
 
 
     function formatTimeRange(startTime, endTime) {
@@ -38,21 +38,20 @@ const History = () => {
     useEffect(() => {
         const run = async () => {
             try {
-                const sID = localStorage.getItem("ID");
-                console.log(sID);
+                const sID =JSON.parse(localStorage.getItem("userData")).ID;
                 const response = await axios.get("http://localhost:8000/api/printing/viewHistoryLog", {
                     params: { sid: sID },
                 });
-                
+
                 if (response.status === 200) {
-                    sethistoryData(response.data.data.data);
-                    console.log(response.data.data.data);
+                    setHistoryData(response.data.data.data);
                 }
             } catch (error) {
                 console.error("Error while fetching printers:", error.message);
             }
         };
         run();
+
     }, []);
 
     const getBackgroundColor = (status) => {
@@ -68,6 +67,41 @@ const History = () => {
         }
     };
 
+
+    const [sortOption, setSortOption] = useState('Tstart_time'); // mặc định sắp xếp theo thời gian
+    const [sortOrder, setSortOrder] = useState('desc'); // mặc định sắp xếp giảm dần
+
+    const handleSortChange = (option) => {
+        setSortOption(option);
+        sortData(option, sortOrder);
+    };
+
+    const handleSortOrderChange = (order) => {
+        setSortOrder(order);
+        sortData(sortOption, order);
+    };
+
+    // Hàm sắp xếp
+    const sortData = (option, order) => {
+        const sortedData = [...historyData];
+        switch (option) {
+            case 'Tpages_per_copy':
+                sortedData.sort((a, b) => order === 'asc' ? a.Tpages_per_copy - b.Tpages_per_copy : b.Tpages_per_copy - a.Tpages_per_copy);
+                break;
+            case 'Tcopies':
+                sortedData.sort((a, b) => order === 'asc' ? a.Tcopies - b.Tcopies : b.Tcopies - a.Tcopies);
+                break;
+            case 'status':
+                sortedData.sort((a, b) => order === 'asc' ? a.Tstatus.localeCompare(b.Tstatus) : b.Tstatus.localeCompare(a.Tstatus));
+                break;
+            case 'Tstart_time':
+                sortedData.sort((a, b) => order === 'asc' ? new Date(a.Tstart_time) - new Date(b.Tstart_time) : new Date(b.Tstart_time) - new Date(a.Tstart_time));
+                break;
+            default:
+                break;
+        }
+        setHistoryData(sortedData);
+    };
     return (
         <>{/* Đặt lại margin và padding của html, body */}
             <style>
@@ -80,10 +114,70 @@ const History = () => {
                 routes={routes}
                 active={"Lịch sử in"}
             />
+            <div
+                style={{
+                    margin: "0 auto",
+                    maxWidth: "1500px",
+                    padding: "90px 20px 0 20px",
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: "30px",
+                }}
+            >
+                {/* Print Summary */}
+                <h2 style={{ fontSize: "24px", fontWeight: "bold", }}>
+                    You have printed <span style={{ color: "#1E90FF" }}>{historyData.length}</span> times!
+                </h2>
+
+                {/* Sort Section */}
+                <div
+                    style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: "15px",
+                        padding: "15px 0",
+                    }}
+                >
+                    <p style={{ fontSize: "18px", fontWeight: "bold", margin: 0 }}>Sort:</p>
+
+                    {/* Sort by Dropdown */}
+                    <FormControl variant="outlined" sx={{ minWidth: 150 }}>
+                        <InputLabel id="sort-by-label">Sort by</InputLabel>
+                        <Select
+                            labelId="sort-by-label"
+                            value={sortOption}
+                            onChange={(e) => handleSortChange(e.target.value)}
+                            label="Sort by"
+                        >
+                            <MenuItem value="Tstart_time">Time</MenuItem>
+                            <MenuItem value="Tpages_per_copy">Pages per Copy</MenuItem>
+                            <MenuItem value="Tcopies">Copies</MenuItem>
+                            <MenuItem value="status">Status</MenuItem>
+                        </Select>
+                    </FormControl>
+
+                    {/* Sort Order Dropdown */}
+                    <FormControl variant="outlined" sx={{ minWidth: 150 }}>
+                        <InputLabel id="sort-order-label">Order</InputLabel>
+                        <Select
+                            labelId="sort-order-label"
+                            value={sortOrder}
+                            onChange={(e) => handleSortOrderChange(e.target.value)}
+                            // label="Order"
+                        >
+                            <MenuItem value="asc">Ascending</MenuItem>
+                            <MenuItem value="desc">Descending</MenuItem>
+                        </Select>
+                    </FormControl>
+                </div>
+            </div>
 
             <Box
                 sx={{
-                    padding: '90px 15px',
+                    padding: '0 15px',
                     maxWidth: '1500px',
                     display: 'flex',       // Flexbox for alignment
                     justifyContent: 'space-between', // Horizontal alignment with space between items
@@ -99,7 +193,6 @@ const History = () => {
                                     borderRadius: '12px',
                                     padding: '16px 16px 0 16px',
                                     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                                    maxWidth: '300px'
                                 }}
                             >
                                 <CardContent>

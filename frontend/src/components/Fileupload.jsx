@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, Typography, Box, Modal, Backdrop, Fade, TextField } from "@mui/material";
+import Upload from "../assets/upload.png";
+import Setting from "../assets/setting.png";
 
 const FileUpload = ({ onChangeValue }) => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -53,7 +55,7 @@ const FileUpload = ({ onChangeValue }) => {
         };
         reader.readAsDataURL(file);
         onChangeValue(20, null);
-        onChangeValue(11, file.name); ``
+        onChangeValue(11, file.name); 
         onChangeValue(10, parseFloat((file.size / 1024 / 1024)));
         setOpenPreview(true);
       } else {
@@ -79,7 +81,7 @@ const FileUpload = ({ onChangeValue }) => {
   return (
     <div
       style={{
-        padding: "20px",
+        padding: "10px",
         textAlign: "center",
         display: "flex",
         flexDirection: "column",
@@ -99,10 +101,18 @@ const FileUpload = ({ onChangeValue }) => {
             variant="contained"
             component="span"
             sx={{
-              //width: "100%",
-              height: "100%"
+              width: "160px",
+              height: "148px",
+              backgroundColor: "white",
+              display: "flex",
+              flexDirection: "column",
+              color: "black",
+              border: "brown",
+              borderRadius: "8px",
+              marginBottom: "10px"
             }}
           >
+            <img src={Upload} style={{maxWidth:"80px"}} />
             Select File
           </Button>
         </label>
@@ -113,24 +123,38 @@ const FileUpload = ({ onChangeValue }) => {
             color="primary"
             onClick={handlePreview}
             sx={{
-              // width: "100%",
-              height: "100%"
+              width: "160px",
+              height: "148px",
+              backgroundColor: "white",
+              display: "flex",
+              flexDirection: "column",
+              color: "black",
+              border: "brown",
+              borderRadius: "8px",
+              marginBottom: "10px"
             }}
           >
-            Preview & Configure print
+            <img src={Setting} style={{maxWidth:"80px"}} />
+            Preview
           </Button>
 
           <Button
-            variant="outlined"
-            color="secondary"
+            variant="contained"
+            color="primary"
             onClick={() => {
               setSelectedFile(null);
               setFileContent(null);
               onChangeValue(100, null);
             }}
             sx={{
-              // width: "100%",
-              height: "100%"
+              // //width: "100%",
+              // height: "100%",
+              backgroundColor: "#f54949",
+              display:"flex",
+              flexDirection:"column",
+              color : "black",
+              border :"brown",
+              borderRadius:"20px"
             }}
           >
             Delete File
@@ -218,7 +242,7 @@ const FileUpload = ({ onChangeValue }) => {
               <Box sx={{ margin: "10px 0", display: "flex", flexDirection: "column" }}>
                 <Typography variant="body1" sx={{ marginBottom: "8px" }}>
                   <strong>Number of Pages:</strong>
-                  <span style={{ fontSize: "12px", color: "gray" }}>
+                  <span style={{ fontSize: "12px", color: "red" }}>
                     (Ensure the page count is correct for the file)
                   </span>
                 </Typography>

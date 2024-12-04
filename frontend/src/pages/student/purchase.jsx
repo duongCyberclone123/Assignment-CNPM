@@ -59,9 +59,8 @@ const PrintPurchasePage = () => {
         if (validate()) {
             setSuccessModalOpen(true);
             const res = await axios.post("http://localhost:8000/api/printing/buyPage",
-                { sid: localStorage.getItem("ID"), numbersOfPages: paperCount, PMmethod: paymentMethod, }
+                { sid: JSON.parse(localStorage.getItem("userData")).ID, numbersOfPages: paperCount, PMmethod: paymentMethod, }
             )
-            console.log(res);
         }
     };
 

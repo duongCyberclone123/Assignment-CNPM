@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button, Typography, Box, Container, AppBar, Toolbar, IconButton, Avatar } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 
 const StudentDashboard = () => {
   const navigate = useNavigate();

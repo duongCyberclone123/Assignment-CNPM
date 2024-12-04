@@ -1,33 +1,30 @@
 import React, { useEffect, useState } from "react";
-import {
-    Box,
-    Button,
-    Typography,
-    Modal,
-    Card,
-    CardContent,
-    Grid,
-} from "@mui/material";
+import { Box, Button, Typography, Modal, Card, CardContent, Grid, TextField, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import axios from 'axios';
 
 import PR from "../assets/printer.png"; // Path to the printer image
+import printerView from "../assets/printerView.png"; // Path to the printer image
 
 const PrinterList = ({ onChangeValue }) => {
     // thong tin tra ve tu api
     const [printers, setPrinters] = useState([]);
     // Chon may
     const [selectedPrinter, setSelectedPrinter] = useState(null);
+    const [selectedIndex, setSelectedIndex] = useState(-1);
     // Cho moral
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
+    const handleNext = () => {
+        setOpen(false);
+
+    };
 
     const selectPrinter = (printer) => {
         setSelectedPrinter(printer);
-        onChangeValue(1,printer.PID);
+        onChangeValue(1, printer.PID);
         onChangeValue(2, null);
     };
-
     useEffect(() => {
         const fetchPrinters = async () => {
             try {
@@ -47,14 +44,31 @@ const PrinterList = ({ onChangeValue }) => {
     return (
         <div
             style={{
-                padding: "20px",
+                padding: "10px 0",
                 textAlign: "center",
                 display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
+                flexDirection: "row",
+                justifyContent: "center",
+                gap: "20px"
             }}
         >
-            <Button variant="contained" color="primary" onClick={handleOpen}>
+            <Button
+                variant="contained"
+                color="primary"
+                onClick={handleOpen}
+                sx={{
+                    width: "160px",
+                    height: "148px",
+                    backgroundColor: "white",
+                    display: "flex",
+                    flexDirection: "column",
+                    color: "black",
+                    border: "brown",
+                    borderRadius: "8px",
+                    marginBottom: "10px"
+                }}
+            >
+                <img src={printerView} style={{ maxWidth: "80px" }} />
                 Select Printer
             </Button>
 
@@ -76,7 +90,9 @@ const PrinterList = ({ onChangeValue }) => {
                         overflowX: "hidden",
                     }}
                 >
-                    <Typography variant="h6" sx={{ marginBottom: 2 }}>
+
+
+                    <Typography variant="h6">
                         Select Printer
                     </Typography>
 
@@ -92,9 +108,12 @@ const PrinterList = ({ onChangeValue }) => {
                                         display: "flex",
                                         flexDirection: "row",
                                         alignItems: "center",
-                                        width:"100%"
+                                        width: "100%"
                                     }}
-                                    onClick={() => selectPrinter(printer)}
+                                    onClick={() => {
+                                        selectPrinter(printer);
+                                        selectedIndex(index);
+                                    }}
                                 >
                                     {/* Printer Image */}
                                     <Box
@@ -109,15 +128,15 @@ const PrinterList = ({ onChangeValue }) => {
                                         }}
                                     />
                                     {/* Printer Details */}
-                                    <CardContent sx={{ padding: 0, maxWidth: "calc(100% -96px)"}}>
+                                    <CardContent sx={{ padding: 0, maxWidth: "calc(100% -96px)" }}>
                                         <Typography
                                             variant="subtitle1"
                                             fontWeight="bold"
                                             sx={{
-                                                width: "100%",                    // Đảm bảo sử dụng hết chiều rộng của CardContent
-                                                overflow: 'hidden',               // Ẩn nội dung tràn ra ngoài
-                                                whiteSpace: 'nowrap',             // Ngăn văn bản xuống dòng
-                                                textOverflow: 'ellipsis',         // Hiển thị dấu ba chấm khi quá dài
+                                                width: "100%",
+                                                overflow: 'hidden',
+                                                whiteSpace: 'nowrap',
+                                                textOverflow: 'ellipsis',
                                             }}
                                             title={printer.Pname + ' (' + printer.Pmodel + ')'} // Hiển thị thông tin đầy đủ khi hover
                                         >
@@ -149,16 +168,57 @@ const PrinterList = ({ onChangeValue }) => {
                         <Button variant="outlined" color="error" onClick={handleClose} sx={{ marginRight: 2 }}>
                             Exit
                         </Button>
-                        {/* <Button
-                            variant="contained"
-                            color="success"
-                            disabled={!selectedPrinter}
-                        >
-                            Select
-                        </Button> */}
+                        {selectedPrinter &&
+                            <Button variant="outlined" color="success" onClick={handleClose} sx={{ marginRight: 2 }}>
+                                Done
+                            </Button>
+                        }
                     </Box>
                 </Box>
             </Modal>
+
+            <Box sx={{
+                height: "128px",
+                width: "200px",
+                display: selectedPrinter ? "flex" : "none",
+                flexDirection: "column",
+                alignItems: "start",
+                justifyContent: "space-between",
+                border: "2px solid #ddd",
+                borderRadius: "8px",
+                padding: "10px",
+            }}>
+                <Typography
+                    variant="subtitle1"
+                    fontWeight="bold"
+                    sx={{
+                        // width: "100%",
+                        overflow: 'hidden',
+                        whiteSpace: 'nowrap',
+                        textOverflow: 'ellipsis',
+                    }}
+                    title={selectedPrinter?.Pname + ' (' + selectedPrinter?.Pmodel + ')'} // Hiển thị thông tin đầy đủ khi hover
+                >
+                    {selectedPrinter?.Pname + ' (' + selectedPrinter?.Pmodel + ')'}
+                </Typography>
+                <Typography variant="body2" sx={{ justifySelf: "flex-start"}}>ID: {selectedPrinter?.PID}</Typography>
+                <Typography variant="body2" sx={{ justifySelf: "flex-start" }}>
+                    <strong>Base:</strong> {selectedPrinter?.Pfacility}
+                </Typography>
+                <Typography variant="body2" sx={{ justifySelf: "flex-start" }}>
+                    <strong>Building:</strong> {selectedPrinter?.Pbuilding}
+                </Typography>
+                <Typography variant="body2" sx={{ justifySelf: "flex-start" }}>
+                    <strong>Room:</strong> {selectedPrinter?.Proom}
+                </Typography>
+                <Typography
+                    variant="body2"
+                    color={selectedPrinter?.Pstatus === "Active" ? "green" : "red"}
+                    sx={{ justifySelf: "flex-start" }}
+                >
+                    {selectedPrinter?.Pstatus === "Active" ? "Ready" : "Not Ready"}
+                </Typography>
+            </Box>
         </div>
     );
 };
