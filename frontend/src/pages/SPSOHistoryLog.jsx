@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, Container, Typography, FormControl, Card, CardContent } from '@mui/material';
+import { TextField, Button, Box, Container, Typography, FormControl, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress } from '@mui/material';
 import axios from 'axios';
 import Navbar from "/components/spsonavbar";
 
@@ -22,10 +22,10 @@ const SPSOHistoryLog = () => {
         startDate: startDate,
         endDate: endDate,
       };
-      
-      const response = await axios.get('http://localhost:8000/api/printing/viewLog', { params: requestBody });
-  
-      if (response.data && response.data.data && response.data.data.data && Array.isArray(response.data.data.data)) {
+
+      const response = await axios.post('http://localhost:8000/api/printing/viewLog', requestBody);
+
+      if (response.data && response.data.data && Array.isArray(response.data.data.data)) {
         setHistory(response.data.data.data);
       } else {
         setError('Dữ liệu trả về không hợp lệ.');
@@ -36,13 +36,12 @@ const SPSOHistoryLog = () => {
       setLoading(false);
     }
   };
-  
 
   return (
     <Container>
       <Navbar />
       <Box sx={{ marginTop: '80px' }}></Box>
-      <Typography variant="h4" gutterBottom>Lịch sử in</Typography>
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', textAlign: 'center' ,color: '#1e88e5'}}>Lịch sử in</Typography>
 
       <Box sx={{ marginBottom: 3 }}>
         <FormControl fullWidth sx={{ marginBottom: 2 }}>
@@ -52,7 +51,7 @@ const SPSOHistoryLog = () => {
             value={studentId}
             onChange={(e) => setStudentId(e.target.value)}
             fullWidth
-            sx={{ borderRadius: '8px' }}
+            sx={{ borderRadius: '8px', '& .MuiOutlinedInput-root': { backgroundColor: '#f5f5f5' }}}
           />
         </FormControl>
 
@@ -65,7 +64,7 @@ const SPSOHistoryLog = () => {
             onChange={(e) => setStartDate(e.target.value)}
             fullWidth
             InputLabelProps={{ shrink: true }}
-            sx={{ borderRadius: '8px' }}
+            sx={{ borderRadius: '8px', '& .MuiOutlinedInput-root': { backgroundColor: '#f5f5f5' }}}
           />
         </FormControl>
 
@@ -78,7 +77,7 @@ const SPSOHistoryLog = () => {
             onChange={(e) => setEndDate(e.target.value)}
             fullWidth
             InputLabelProps={{ shrink: true }}
-            sx={{ borderRadius: '8px' }}
+            sx={{ borderRadius: '8px', '& .MuiOutlinedInput-root': { backgroundColor: '#f5f5f5' }}}
           />
         </FormControl>
 
@@ -89,7 +88,7 @@ const SPSOHistoryLog = () => {
             value={printerId}
             onChange={(e) => setPrinterId(e.target.value)}
             fullWidth
-            sx={{ borderRadius: '8px' }}
+            sx={{ borderRadius: '8px', '& .MuiOutlinedInput-root': { backgroundColor: '#f5f5f5' }}}
           />
         </FormControl>
 
@@ -103,45 +102,64 @@ const SPSOHistoryLog = () => {
             '&:hover': {
               backgroundColor: '#0056b3',
             },
+            marginTop: 2,
+            padding: '10px 0',
+            fontWeight: 'bold',
           }}
         >
           Lấy lịch sử in
         </Button>
       </Box>
 
-      {loading && <Typography variant="body1">Đang tải...</Typography>}
-
-      {error && <Typography variant="body1" color="error">{error}</Typography>}
+      {loading && <Box sx={{ display: 'flex', justifyContent: 'center' }}><CircularProgress /></Box>}
+      {error && <Typography variant="body1" color="error" sx={{ textAlign: 'center', fontWeight: 'bold' }}>{error}</Typography>}
 
       <Box sx={{ marginTop: 3 }}>
-        <Typography variant="h6" gutterBottom>Kết quả</Typography>
+        <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', textAlign: 'center' }}>Kết quả</Typography>
         <Box sx={{ marginTop: 2 }}>
           {history.length === 0 ? (
-            <Typography variant="body1">Không có dữ liệu.</Typography>
+            <Typography variant="body1" sx={{ textAlign: 'center', fontStyle: 'italic' }}>Không có dữ liệu.</Typography>
           ) : (
-            <div>
-              {history.map((item, index) => (
-                <Card key={index} sx={{ marginBottom: 2, borderRadius: '8px' }}>
-                  <CardContent>
-                    <Typography variant="body1">
-                      <strong>TID:</strong> {item.TID} <br />
-                      <strong>Số trang mỗi bản sao:</strong> {item.Tpages_per_copy} <br />
-                      <strong>Số bản sao:</strong> {item.Tcopies} <br />
-                      <strong>Trạng thái:</strong> {item.Tstatus} <br />
-                      <strong>Kích thước trang:</strong> {item.Tpage_size} <br />
-                      <strong>Thời gian bắt đầu:</strong> {new Date(item.Tstart_time).toLocaleString()} <br />
-                      <strong>Thời gian kết thúc:</strong> {new Date(item.Tend_time).toLocaleString()} <br />
-                      <strong>Kích thước gấp đôi:</strong> {item.Tis_double_size ? 'Có' : 'Không'} <br />
-                      <strong>Horizon:</strong> {item.isHorizon ? 'Có' : 'Không'} <br />
-                      <strong>Màu sắc:</strong> {item.isColoring ? 'Có' : 'Không'} <br />
-                      <strong>SID (Student ID):</strong> {item.SID} <br />
-                      <strong>DID (Device ID):</strong> {item.DID} <br />
-                      <strong>PID (Printer ID):</strong> {item.PID}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <TableContainer component={Paper}>
+              <Table sx={{ minWidth: 650 }} aria-label="history table">
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: '#1976d2' }}>
+                    <TableCell sx={{ color: 'white', fontWeight: 'bold' , border: '1px solid #ddd'}}>TID</TableCell>
+                    <TableCell sx={{ color: 'white', fontWeight: 'bold' , border: '1px solid #ddd'}}>Số trang mỗi bản sao</TableCell>
+                    <TableCell sx={{ color: 'white', fontWeight: 'bold' , border: '1px solid #ddd'}}>Số bản sao</TableCell>
+                    <TableCell sx={{ color: 'white', fontWeight: 'bold' , border: '1px solid #ddd'}}>Trạng thái</TableCell>
+                    <TableCell sx={{ color: 'white', fontWeight: 'bold' , border: '1px solid #ddd'}}>Kích thước trang</TableCell>
+                    <TableCell sx={{ color: 'white', fontWeight: 'bold' , border: '1px solid #ddd'}}>Thời gian bắt đầu</TableCell>
+                    <TableCell sx={{ color: 'white', fontWeight: 'bold' , border: '1px solid #ddd'}}>Thời gian kết thúc</TableCell>
+                    <TableCell sx={{ color: 'white', fontWeight: 'bold' , border: '1px solid #ddd'}}>Kích thước gấp đôi</TableCell>
+                    <TableCell sx={{ color: 'white', fontWeight: 'bold' , border: '1px solid #ddd'}}>Horizon</TableCell>
+                    <TableCell sx={{ color: 'white', fontWeight: 'bold' , border: '1px solid #ddd'}}>Màu sắc</TableCell>
+                    <TableCell sx={{ color: 'white', fontWeight: 'bold' , border: '1px solid #ddd'}}>SID (Student ID)</TableCell>
+                    <TableCell sx={{ color: 'white', fontWeight: 'bold' , border: '1px solid #ddd'}}>DID (Device ID)</TableCell>
+                    <TableCell sx={{ color: 'white', fontWeight: 'bold' , border: '1px solid #ddd'}}>PID (Printer ID)</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {history.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell sx={{border: '1px solid #ddd'}}>{item.TID}</TableCell>
+                      <TableCell sx={{border: '1px solid #ddd'}}>{item.Tpages_per_copy}</TableCell>
+                      <TableCell sx={{border: '1px solid #ddd'}}>{item.Tcopies}</TableCell>
+                      <TableCell sx={{border: '1px solid #ddd'}}>{item.Tstatus}</TableCell>
+                      <TableCell sx={{border: '1px solid #ddd'}}>{item.Tpage_size}</TableCell>
+                      <TableCell sx={{border: '1px solid #ddd'}}>{new Date(item.Tstart_time).toLocaleString()}</TableCell>
+                      <TableCell sx={{border: '1px solid #ddd'}}>{new Date(item.Tend_time).toLocaleString()}</TableCell>
+                      <TableCell sx={{border: '1px solid #ddd'}}>{item.Tis_double_size ? 'Có' : 'Không'}</TableCell>
+                      <TableCell sx={{border: '1px solid #ddd'}}>{item.isHorizon ? 'Có' : 'Không'}</TableCell>
+                      <TableCell sx={{border: '1px solid #ddd'}}>{item.isColoring ? 'Có' : 'Không'}</TableCell>
+                      <TableCell sx={{border: '1px solid #ddd'}}>{item.SID}</TableCell>
+                      <TableCell sx={{border: '1px solid #ddd'}}>{item.DID}</TableCell>
+                      <TableCell sx={{border: '1px solid #ddd'}}>{item.PID}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           )}
         </Box>
       </Box>

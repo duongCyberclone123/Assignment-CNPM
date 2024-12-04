@@ -133,7 +133,7 @@ const Report = () => {
     <div style={styles.container}>
       <Navbar /> {/* Navbar Component */}
 
-      <Typography variant="h3" align="center" gutterBottom style={styles.pageTitle}>Báo cáo</Typography>  {/* Tiêu đề giữa trang */}
+      <Typography variant="h4" align="center" gutterBottom style={styles.pageTitle}>Báo cáo</Typography>  {/* Tiêu đề giữa trang */}
 
       <Grid container spacing={2} justifyContent="center" alignItems="center" style={styles.filters}>
         <Grid item>
@@ -235,12 +235,14 @@ const styles = {
       backgroundColor: '#f5f5f5',
       fontWeight: 'bold',
       borderBottom: '2px solid #1e88e5', 
+      border: '1px solid #ddd'
     },
     tableRow: {
       '&:hover': {
         backgroundColor: '#f2f2f2',  
       },
       borderBottom: '1px solid #ccc', 
+      border: '1px solid #ddd'
     },
   searchButton: {
     marginTop: '7px',
