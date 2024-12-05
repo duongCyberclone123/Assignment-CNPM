@@ -17,7 +17,7 @@ const Login = () => {
       });
 
       // Kiểm tra phản hồi từ backend
-      if (response.request.status === 200) {
+      if (response.data.status === 200) {
         const { token, loadedUser } = response.data.data;  // Lấy token và loadedUser từ response
 
         // Lưu token vào localStorage để sử dụng cho các yêu cầu API sau
@@ -32,7 +32,7 @@ const Login = () => {
           navigate('/spsodashboard');
         } else if (loadedUser.ID >= 2000 && loadedUser.ID <= 5000) {
           // Vai trò là student
-          navigate('/home');
+          navigate('/student-dashboard');
         } else {
           alert('Không xác định vai trò người dùng.');
         }

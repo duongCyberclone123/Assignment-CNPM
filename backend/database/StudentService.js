@@ -91,22 +91,6 @@ class StudentService{
     // Printing Process
     async uploadFile(studentID, newFile){
         studentID = parseInt(studentID)
-        const curdid = await new Promise((resolve,reject)=>{
-            client.query(`
-                SELECT DID FROM DOCUMENT
-                ORDER BY DID DESC
-                LIMIT 1
-            `,(err,res)=>{
-                if(err) reject({
-                    status: 400,
-                    msg:"Fetch Fail",
-                    data: null
-                })
-                else resolve(res)
-            })
-        })
-
-        const did = curdid[0].DID + 1
         return new Promise((resolve,reject) => {
             const {dname, dsize, dformat, dpage_num} = newFile
             const date = new Date();
@@ -127,7 +111,7 @@ class StudentService{
                         resolve({
                             status: 200,
                             msg: "Upload File successfully!",
-                            data: {did, newFile}
+                            data: newFile
                         })
                     }
                 }
@@ -261,54 +245,28 @@ class StudentService{
         if (queueTransaction.length == 0) return null;
         let result = queueTransaction;
         let solvingTime = 0;
-        return new Promise((resolve,reject) => {
-            for (let x of queueTransaction){
-                console.log("require printing " + x.TID + " - " + x.Tpages_per_copy * x.Tcopies)
-                if (true){
-                    console.log("on printing " + x.TID)
-                    solvingTime += x.Tpages_per_copy * x.Tcopies
-                    client.query(`
-                        UPDATE TRANSACTION 
-                        SET TEND_TIME = DATE_ADD(TSTART_TIME, INTERVAL ? SECOND), TSTATUS = ?
-                        WHERE TID = ?
-                    `,[solvingTime,"Success", x.TID],(err,res)=>{
-                        if (err) reject({
-                            status: 400,
-                            msg: err.message,
-                            data: null
-                        })
-                        else {
-                            resolve(res)
-                        }   
+        for (let x of queueTransaction){
+            console.log("require printing " + x.TID + " - " + x.Tpages_per_copy * x.Tcopies)
+            if (true){
+                console.log("on printing " + x.TID)
+                solvingTime += x.Tpages_per_copy * x.Tcopies
+                client.query(`
+                    UPDATE TRANSACTION 
+                    SET TEND_TIME = DATE_ADD(TSTART_TIME, INTERVAL ? SECOND), TSTATUS = ?
+                    WHERE TID = ?
+                `,[solvingTime,"Success", x.TID],(err,res)=>{
+                    if (err) reject({
+                        status: 400,
+                        msg: err.message,
+                        data: null
                     })
-                }
+                    else {
+                        resolve(res)
+                    }   
+                })
             }
-        })
-    }
-
-    async createReport(studentID, report){
-        const date = new Date();
-        const dupload_time = date.toISOString().slice(0, 19).replace('T', ' ');
-        const id = await new Promise((resolve,reject) => {
-            client.query(`
-                SELECT id FROM REPORT
-                ORDER BY id DESC
-                LIMIT 1
-            `,(err,res)=>{
-                if (err) reject(err)
-                else resolve(res)
-            })
-        })
-        const rid = (id && id.length>0? id[0].id + 1:1)
-        return new Promise((resolve, reject) => {
-            client.query(`
-                INSERT INTO REPORT (id, comment, rate, time, sid)
-                VALUES (?,?,?,?,?)
-            `,[rid,report.comment || null, report.rate|| null, dupload_time,studentID.sid],(err,res)=>{
-                if (err) reject(err)
-                else resolve(res)
-            })
-        })
+        }
+        return result
     }
 }
 
