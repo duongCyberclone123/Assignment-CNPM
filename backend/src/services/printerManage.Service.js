@@ -88,7 +88,7 @@ class PrinterService {
     static updatePrinter(pid, data) {
         return new Promise((resolve, reject) => {
             const { Pmodel, Pstatus, Pfacility, Pbuilding, Proom, Pname, Plast_maintenance, Pprovide_coloring, EID } = data;
-    
+
             // Kiểm tra máy in có tồn tại không
             const checkQuery = 'SELECT * FROM PRINTER WHERE PID = ?';
             client.execute(checkQuery, [pid], (err, existingPrinter) => {
@@ -109,10 +109,12 @@ class PrinterService {
                         return;
                     }
     
-                    if (checkResult.length > 0) {
-                        // Nếu Pname đã tồn tại
-                        reject({ status: 400, message: `Printer with name "${Pname}" already exists` });
-                        return;
+                    if (checkResult.length) {
+                        const existingPrinterPname = checkResult[0];
+                        if (Number(existingPrinterPname.PID) !== Number(pid, 10)) {
+                            reject({ status: 400, message: `Printer with name "${Pname}" already exists with a different ID` });
+                            return;
+                        }
                     }
 
                     // Cập nhật thông tin máy in
@@ -124,10 +126,10 @@ class PrinterService {
                     const params = [
                         Pmodel || existingPrinter[0].Pmodel,
                         Pstatus || existingPrinter[0].Pstatus,
-                        Pname || existingPrinter[0].Pname,
                         Pfacility || existingPrinter[0].Pfacility,
                         Pbuilding || existingPrinter[0].Pbuilding,
                         Proom || existingPrinter[0].Proom,
+                        Pname || existingPrinter[0].Pname,
                         Plast_maintenance || existingPrinter[0].Plast_maintenance,
                         Pprovide_coloring || existingPrinter[0].Pprovide_coloring,
                         EID || existingPrinter[0].EID,

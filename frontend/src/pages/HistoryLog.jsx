@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Container, Typography, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
 import axios from 'axios';
-import Navbar from "/components/navbar"
+import Navbar from '../components/Navbar';
 const PrintHistory = () => {
+  const menuItems = ['Trang chủ', 'Quản lí máy in', 'Lịch sử in', 'Báo cáo sử dụng'];
+  const routes = ['/spsodashboard', '/manageprinter', '/printhistory', '/purchase'];
+
   const [studentId, setStudentId] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -33,7 +36,12 @@ const PrintHistory = () => {
 
   return (
     <Container>
-      <Navbar />  {/* Dùng lại thanh điều hướng ở đây */}
+      <Navbar
+        title="SPSO"
+        menuItems={menuItems}
+        routes={routes}
+        active={"Lịch sử in"}
+      />
       <Box sx={{ marginTop: '80px' }}></Box>
       <Typography variant="h4" gutterBottom>Lịch sử in</Typography>
 

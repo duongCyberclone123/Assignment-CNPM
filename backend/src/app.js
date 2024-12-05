@@ -2,11 +2,19 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const route = require('./routes/index');
 const cors = require('cors');
+const path = require('path');
 const cookieParser = require('cookie-parser');
 const port = 8000;
 
 const app = express();
-// app.use(bodyParser.urlencoded({extended: true}));
+
+// view engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'jade');
+
+// uncomment after placing your favicon in /public
+//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(cookieParser());
 

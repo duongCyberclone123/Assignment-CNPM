@@ -5,7 +5,7 @@ import axios from "axios";
 import Navbar from "../../components/Navbar";
 const PrintPurchasePage = () => {
     const menuItems = ['Trang chủ', 'In tài liệu', 'Lịch sử in', 'Mua trang in'];
-    const routes = ['/home', '/print', '/history', '/purchase'];
+    const routes = ['/student-dashboard', '/print', '/history', '/purchase'];
 
     const [paperCount, setPaperCount] = useState("");
     const [paymentMethod, setPaymentMethod] = useState("");
