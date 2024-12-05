@@ -25,7 +25,6 @@ const ManagePrinter = () => {
   const handleNavigation = (path) => {
     navigate(path);
   };
-
   useEffect(() => {
     const fetchPrinters = async () => {
       try {
@@ -35,6 +34,17 @@ const ManagePrinter = () => {
         console.error('Error fetching printers:', error);
       }
     };
+    fetchPrinters();
+  }, [printers])
+  useEffect(() => {
+    // const fetchPrinters = async () => {
+    //   try {
+    //     const result = await getPrinters();
+    //     setPrinters(result.data || []);
+    //   } catch (error) {
+    //     console.error('Error fetching printers:', error);
+    //   }
+    // };
     
     const fetchAllowedFileTypes = async () => {
       try {
@@ -55,10 +65,10 @@ const ManagePrinter = () => {
         setLoading(false);
       }
     };
-    fetchPrinters();
+    
     fetchAllowedFileTypes();
   }, []);
-
+  
   const handleAddPrinter = async () => {
     const printerData = { 
       Pname: name, 
