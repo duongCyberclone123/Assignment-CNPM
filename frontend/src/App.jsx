@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route ,Outlet,Navigate} from 'react-router-dom';
-import Home from './pages/Home';
+import Home from './pages/home';
 import Login from './pages/login';
 import StudentDashboard from './pages/StudentDashboard'
 import SPSODashboard from './pages/SPSODashboard';
